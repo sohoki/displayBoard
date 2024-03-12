@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -43,7 +44,7 @@ public class EgovConfigWebDispatcherServlet implements WebMvcConfigurer {
 	//final static String URL_BASED_VIEW_RESOLVER_PREFIX = "/WEB-INF/jsp/";
 	//final static String URL_BASED_VIEW_RESOLVER_SUFFIX = ".jsp";
 
-	//private final String[] CORS_ORIGIN_SERVER_URLS = {"http://127.0.0.1:3000", "http://localhost:3000"};
+	private final String[] CORS_ORIGIN_SERVER_URLS = {"http://127.0.0.1:3000", "http://localhost:3000"};
 
 	// =====================================================================
 	// RequestMappingHandlerMapping 설정
@@ -55,10 +56,9 @@ public class EgovConfigWebDispatcherServlet implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(new AuthenticInterceptor())
 			.addPathPatterns(
-//				"/cop/com/*.do",
-//				"/cop/bbs/*Master*.do",
 				"/uat/uia/*.do")
 			.excludePathPatterns(
+				"/swagger-ui/index.html",
 				"/uat/uia/actionLogin.do",
 				"/uat/uia/actionLoginAPI.do",
 				"/uat/uia/actionLoginJWT.do",
@@ -121,9 +121,12 @@ public class EgovConfigWebDispatcherServlet implements WebMvcConfigurer {
 	// -------------------------------------------------------------
 	// CORS 설정 추가
 	// -------------------------------------------------------------
-//	@Override
-//	public void addCorsMappings(CorsRegistry registry) {
-//		registry.addMapping("*.do").allowedOrigins(CORS_ORIGIN_SERVER_URLS);
-//	}
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+		registry.addMapping("/**").allowedOrigins(CORS_ORIGIN_SERVER_URLS)
+				.allowedMethods("*")
+				.maxAge(3600)
+				.allowedHeaders("*");
+	}
 
 }

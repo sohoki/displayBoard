@@ -1,25 +1,12 @@
-spring:
-  profiles:
-    active:dev
 server:
+  port : 8082
   servlet: 
     context-path: /
     session:
       timeout : 3600
-    port : 8081
-springdoc:
-  packages-to-scan: com.colabear754.springdoc_example.controllers
-  default-consumes-media-type: application/json;charset=UTF-8
-  default-produces-media-type: application/json;charset=UTF-8
-  swagger-ui:
-    path: /
-    disable-swagger-default-url: true
-    display-request-duration: true
-    operations-sorter: alpha
-token:
-  expiration_time : 6000000
-  refresh_time : 86400000 #24*60*60*1000
-  secret : Q4NSl604sgyHJj1qwEkR3ycUeR4uUAt7WJraD7EN3O9DVM4yyYuHxMEbSF4XXyYJkal13eqgB0F7Bq4HQ4NSl604sgyHJj1qwEkR3ycUeR4uUAt7W
+spring:
+  profiles: 
+    active: dev 
 Globals:
   OsType : WINDOWS
   LocalIp : 127.0.0.1
@@ -33,8 +20,19 @@ Globals:
     Extensions: .gif.jpg.jpeg.png.xls.xlsx
   filePath : C:\\dev\\eGovFrameDev-4.1.0-64bit\\workspace\\IPCC\\IPCC\\backend_mo\\src\\main\\webapp\\upload
   editorPath : C:\\dev\\eGovFrameDev-4.1.0-64bit\\workspace\\IPCC\\IPCC\\backend_mo\\src\\main\\webapp\\upload\\editor
-  
   Allow:
     Origin: "http://localhost:8080"
   crypto:
     algoritm : egovframe
+springdoc:
+  packages-to-scan: com.colabear754.springdoc_example.controllers
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: /
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: alpha
+token:
+  expiration_time : 6000000
+  refresh_time : 86400000 #24*60*60*1000
+  secret : Q4NSl604sgyHJj1qwEkR3ycUeR4uUAt7WJraD7EN3O9DVM4yyYuHxMEbSF4XXyYJkal13eqgB0F7Bq4HQ4NSl604sgyHJj1qwEkR3ycUeR4uUAt7W

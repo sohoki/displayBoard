@@ -6,16 +6,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
+import org.egovframe.rte.fdl.cmmn.exception.BaseException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
 import egovframework.com.cmm.LoginVO;
+import egovframework.com.exception.dto.ErrorCode;
+import egovframework.let.uat.uia.service.EgovLoginService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 
 //security 관련 제외한 jwt util 클래스
-
+@Slf4j
 @Component
 public class EgovJwtTokenUtil implements Serializable{
 
@@ -33,6 +43,10 @@ public class EgovJwtTokenUtil implements Serializable{
 	
 	@Value("egovframe")
     private String secret;
+	
+	/** EgovLoginService */
+	@Resource(name = "loginService")
+	private EgovLoginService loginService;
 	
 	//retrieve username from jwt token
     public String getUsernameFromToken(String token) {
@@ -88,5 +102,45 @@ public class EgovJwtTokenUtil implements Serializable{
         final String username = getUsernameFromToken(token);
         return (username.equals(loginVO.getUserSe()+loginVO.getId()) && !isTokenExpired(token));
     }
+    //validate token
+    public Boolean validateToken(String token) throws BaseException {
+    	try{
+            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            return true;
+        } catch(ExpiredJwtException e) {
+            log.error(ErrorCode.EXPIRED_JWT.getMessage() );
+            throw new BaseException(ErrorCode.EXPIRED_JWT.getMessage());
+        } catch(JwtException e) {
+            log.error(ErrorCode.INVALID_JWT.getMessage());
+            throw new BaseException(ErrorCode.INVALID_JWT.getMessage());
+        }
+    }
+    
+    public String resolveToken(HttpServletRequest req) {
+        String bearerToken = req.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+    /**
+     * 토큰으로부터 클레임을 만들고, 이를 통해 User 객체 생성해 Authentication 객체 반환
+     * @throws Exception 
+    */
+    public Authentication getAuthentication(String token) throws Exception {
+        String userPrincipal = Jwts.parser().
+                setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody().getSubject();
+        
+        //LoginVO resultVO = loginService.actionLogin(null) .actionLogin(userPrincipal );// .actionLogin(loginVO);
+		
+        //UserDetails userDetails = userDetailsService.loadUserByUsername(userPrincipal);
+        
+       
+        
+        return new UsernamePasswordAuthenticationToken(userPrincipal, "USER_PASSWORD"); 
+    }
+    
 
 }

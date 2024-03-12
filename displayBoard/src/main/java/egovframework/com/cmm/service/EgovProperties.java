@@ -68,6 +68,7 @@ public class EgovProperties {
 		
 	// /target/classes/application.properties
 	public static final String GLOBALS_PROPERTIES_FILE = "classpath:" + FILE_SEPARATOR + "application.properties";
+	//public static final String GLOBALS_PROPERTIES_FILE = "classpath:" + FILE_SEPARATOR + "application.yml";
 
 	/**
 	 * 인자로 주어진 문자열을 Key값으로 하는 상대경로 프로퍼티 값을 절대경로로 반환한다(Globals.java 전용)
@@ -115,11 +116,13 @@ public class EgovProperties {
         Resource resources = ResourcePatternUtils.getResourcePatternResolver(new DefaultResourceLoader())
 			    .getResource(GLOBALS_PROPERTIES_FILE);
 		
-        debug(GLOBALS_PROPERTIES_FILE + " : " + keyName);
+        //System.out.println("GLOBALS_PROPERTIES_FILE:" + GLOBALS_PROPERTIES_FILE);
+        //debug(GLOBALS_PROPERTIES_FILE + " : " + keyName);
 		
 		try (InputStream in = resources.getInputStream()) {
 			Properties props = new Properties(); 
 			props.load(new java.io.BufferedInputStream(in));
+			System.out.println("keyName:" + keyName);
 			value = props.getProperty(keyName).trim();
 		} catch (FileNotFoundException fne) {
 			debug(fne);

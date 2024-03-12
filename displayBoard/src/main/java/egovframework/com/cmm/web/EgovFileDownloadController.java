@@ -59,7 +59,7 @@ public class EgovFileDownloadController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EgovFileDownloadController.class);
 	
 	public static final String ALGORITM_KEY = EgovProperties.getProperty("Globals.crypto.algoritm");
-
+	
 	/**
 	 * 브라우저 구분 얻기.
 	 *

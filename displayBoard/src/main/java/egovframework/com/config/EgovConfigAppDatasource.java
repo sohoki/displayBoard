@@ -1,15 +1,13 @@
 package egovframework.com.config;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
-
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.context.annotation.Primary;
 
 /**
  * @ClassName : EgovConfigAppDatasource.java
@@ -29,86 +27,82 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
  *
  */
 @Configuration
-public class EgovConfigAppDatasource {
+public class EgovConfigAppDatasource implements ApplicationListener<ApplicationStartedEvent>{
 
 	/**
 	 *  @Value 을 어노테이션을 이용하는 방법
 	 */
-	//	@Value("${Globals.DbType}")
-	//	private String dbType;
-	//
-	//	@Value("${Globals.DriverClassName}")
-	//	private String className;
-	//
-	//	@Value("${Globals.Url}")
-	//	private String url;
-	//
-	//	@Value("${Globals.UserName}")
-	//	private String userName;
-	//
-	//	@Value("${Globals.Password}")
-	//	private String password;
+	@Value("${Globals.DbType}")
+	private String dbType;
+	
+	@Value("${Globals.mysql.DriverClassName}")
+	private String className;	
+	
+	@Value("${Globals.mysql.Url}")
+	private String url;
+	
+	@Value("${Globals.mysql.UserName}")
+	private String userName;
+	
+	@Value("${Globals.mysql.Password}")
+	private String password;
 
 	/**
 	 *  Environment 의존성 주입하여 사용하는 방법
 	 */
 
-	@Autowired
-	Environment env;
-
-	private String dbType;
-
-	private String className;
-
-	private String url;
-
-	private String userName;
-
-	private String password;
-
+	/*
 	@PostConstruct
 	void init() {
-		dbType = env.getProperty("Globals.DbType");
+		
+		
+		
+		dbType = dbType;
+		System.out.println("##### dbType #####" + dbType);
 		//Exception 처리 필요
 		className = env.getProperty("Globals." + dbType + ".DriverClassName");
 		url = env.getProperty("Globals." + dbType + ".Url");
 		userName = env.getProperty("Globals." + dbType + ".UserName");
 		password = env.getProperty("Globals." + dbType + ".Password");
 	}
-
-	/**
-	 * @return [dataSource 설정] HSQL 설정
-	 */
-	private DataSource dataSourceHSQL() {
-		return new EmbeddedDatabaseBuilder()
-			.setType(EmbeddedDatabaseType.HSQL)
-			.setScriptEncoding("UTF8")
-			.addScript("classpath:/db/shtdb.sql")
-			//			.addScript("classpath:/otherpath/other.sql")
-			.build();
-	}
+	*/
 
 	/**
 	 * @return [dataSource 설정] basicDataSource 설정
 	 */
 	private DataSource basicDataSource() {
+
 		BasicDataSource basicDataSource = new BasicDataSource();
 		basicDataSource.setDriverClassName(className);
 		basicDataSource.setUrl(url);
 		basicDataSource.setUsername(userName);
 		basicDataSource.setPassword(password);
+		basicDataSource.setInitialSize(3); //최초 로드될 때 생성할 connection 개수
+		basicDataSource.setMaxTotal(10); //사용할 최대 connection 개수 
+		basicDataSource.setMaxWaitMillis(30000);
+		basicDataSource.setMaxIdle(10);
+		basicDataSource.setMinIdle(2);
+		basicDataSource.setValidationQuery("select 1");
+		basicDataSource.setTestOnBorrow(false);
+		basicDataSource.setTestOnReturn(false);
+        // Connetion pool 검사 testWhileIdle 설정. 'TimeBetweenEvictionRunsMillis'마다 'NumTestsPerEvictionRun'개의 connection 꺼내 'ValidationQuery'를 날려 확인
+		basicDataSource.setTimeBetweenEvictionRunsMillis(5000);
 		return basicDataSource;
 	}
 
 	/**
 	 * @return [DataSource 설정]
 	 */
+	@Primary
 	@Bean(name = {"dataSource", "egov.dataSource", "egovDataSource"})
 	public DataSource dataSource() {
-		if ("hsql".equals(dbType)) {
-			return dataSourceHSQL();
-		} else {
-			return basicDataSource();
-		}
+		return basicDataSource();
+		
+	}
+
+	@Override
+	public void onApplicationEvent(ApplicationStartedEvent event) {
+		// TODO Auto-generated method stub
+		
 	}
 }

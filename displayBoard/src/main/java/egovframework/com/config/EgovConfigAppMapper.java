@@ -1,21 +1,21 @@
 package egovframework.com.config;
 
 import java.io.IOException;
-
-import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.List;
 import javax.sql.DataSource;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 
@@ -38,50 +38,51 @@ import org.springframework.jdbc.support.lob.DefaultLobHandler;
  */
 @Configuration
 @PropertySources({
-	@PropertySource("classpath:/application.properties")
+	@PropertySource("classpath:/application.yml")
 })
 public class EgovConfigAppMapper {
-	@Autowired
-	DataSource dataSource;
-
-	@Autowired
-	Environment env;
-
+	
+	
+	@Value("${Globals.DbType}")
 	private String dbType;
-
-	@PostConstruct
-	void init() {
-		dbType = env.getProperty("Globals.DbType");
-	}
-
+	
+	private String mapperConfigerLocation = "classpath:/egovframework/mapper/config/mapper-config.xml";
+	
+	@Primary
 	@Bean
 	@Lazy
 	public DefaultLobHandler lobHandler() {
 		return new DefaultLobHandler();
 	}
-
-	@Bean(name = {"sqlSession", "egov.sqlSession"})
-	public SqlSessionFactoryBean sqlSession() {
+	@Primary
+	@Bean(name = {"sqlSession"})
+	public SqlSessionFactoryBean sqlSession(@Qualifier("dataSource") DataSource dataSource) {
 		SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
 		sqlSessionFactoryBean.setDataSource(dataSource);
-
 		PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver();
-
+		//mapper config 설정 
 		sqlSessionFactoryBean.setConfigLocation(
 			pathMatchingResourcePatternResolver
-				.getResource("classpath:/egovframework/mapper/config/mapper-config.xml"));
+				.getResource(mapperConfigerLocation));
 
 		try {
-			sqlSessionFactoryBean.setMapperLocations(
-				pathMatchingResourcePatternResolver
-					.getResources("classpath:/egovframework/mapper/let/**/*_" + dbType + ".xml"));
+			
+			List<String> mapperLocations = new ArrayList<>();
+			mapperLocations.add("classpath:/egovframework/mapper/let/**/*_" + dbType + ".xml");
+			//mapperLocations.add("classpath:/mapper/"+ dbType + "/backoffice/**/*.xml");
+			
+			for (String mapperLocation : mapperLocations) {
+				sqlSessionFactoryBean.setMapperLocations(
+						pathMatchingResourcePatternResolver
+							.getResources(mapperLocation));
+			}
 		} catch (IOException e) {
 			// TODO Exception 처리 필요
 		}
 
 		return sqlSessionFactoryBean;
 	}
-
+	@Primary
 	@Bean
 	public SqlSessionTemplate egovSqlSessionTemplate(@Qualifier("sqlSession") SqlSessionFactory sqlSession) {
 		SqlSessionTemplate sqlSessionTemplate = new SqlSessionTemplate(sqlSession);

@@ -1,5 +1,6 @@
 package egovframework.com.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
@@ -18,8 +19,8 @@ import org.springframework.context.annotation.PropertySources;
 	EgovConfigAppWhitelist.class
 })
 @PropertySources({
-	@PropertySource("classpath:/application.properties")
-}) //CAUTION: min JDK 8
+	@PropertySource("classpath:/application.yml")
+})
 public class EgovConfigApp {
 
 }

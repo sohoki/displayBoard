@@ -38,7 +38,8 @@ public class EgovConfigAppProperties {
 		properties.put("posblAtchFileSize", "5242880");
 		properties.put("Globals.fileStorePath", "/user/file/sht/");
 		properties.put("Globals.addedOptions", "false");
-
+		properties.put("Globals.crypto.algoritm", "egovframe");
+		
 		egovPropertyServiceImpl.setProperties(properties);
 		return egovPropertyServiceImpl;
 	}
