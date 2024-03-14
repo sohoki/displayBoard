@@ -1,6 +1,7 @@
 package egovframework.let.uat.uia.service;
 
-import egovframework.com.cmm.LoginVO;
+import egovframework.com.cmm.AdminLoginVO;
+import egovframework.let.uat.uia.models.dto.LoginReqDto;
 
 /**
  * 일반 로그인을 처리하는 비즈니스 구현 클래스
@@ -28,8 +29,10 @@ public interface EgovLoginService {
 	 * @param vo    LoginVO
 	 * @exception Exception Exception
 	 */
-	public LoginVO actionLogin(LoginVO vo) throws Exception;
+	public AdminLoginVO actionLogin(LoginReqDto vo) throws Exception;
 
+	
+	AdminLoginVO actionLoginSso (String adminId)throws Exception;
 	/**
 	 * 아이디를 찾는다.
 	 * @return LoginVO
@@ -37,7 +40,7 @@ public interface EgovLoginService {
 	 * @param vo    LoginVO
 	 * @exception Exception Exception
 	 */
-	public LoginVO searchId(LoginVO vo) throws Exception;
+	public String searchId(LoginReqDto vo) throws Exception;
 
 	/**
 	 * 비밀번호를 찾는다.
@@ -46,6 +49,6 @@ public interface EgovLoginService {
 	 * @param vo    LoginVO
 	 * @exception Exception Exception
 	 */
-	public boolean searchPassword(LoginVO vo) throws Exception;
+	public boolean searchPassword(LoginReqDto vo) throws Exception;
 
 }

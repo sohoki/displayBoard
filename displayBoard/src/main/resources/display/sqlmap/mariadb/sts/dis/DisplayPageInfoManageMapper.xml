@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.sym.monter.mapper.DisplayPageInfoManageMapper">
+
+    <select id="selectDisplayPageInfoManageListByPagination" resultType="DispalyPageInfoVO">     	      
+		 	SELECT SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT,
+		 	       TB.* FROM (
+						    SELECT a.DISPLAY_SEQ, a.DISPLAY_TITLE, a.DISPLAY_REMARK, a.DISPLAY_GUBUN, 
+						            CASE WHEN ((fn_agentCnt(a.DISPLAY_SEQ)) > 1) THEN 
+                                      CONCAT((SELECT b.AGENT_NM FROM TB_AGENTINFO b 
+                                               WHERE b.DISPLAY_SEQ = a.DISPLAY_SEQ ORDER BY b.DISPLAY_SEQ desc limit 1 ),' 외 ', (fn_agentCnt(a.DISPLAY_SEQ) -1) , '대')
+                                         WHEN ((fn_agentCnt(a.DISPLAY_SEQ)) = 1) THEN 
+                                          (SELECT b.AGENT_NM FROM TB_AGENTINFO b 
+                                               WHERE b.DISPLAY_SEQ = a.DISPLAY_SEQ ORDER BY b.DISPLAY_SEQ desc limit 1 )
+                                   ELSE 
+                                       '없음'
+                                   END AS reportTitle,
+						           a.DISPLAY_UESYN displayUseYn, a.DISPALY_PAGECNT displayPageCnt, a.DISPALY_TOTALTIME displayTotalTime,
+						           a.FRST_REGIST_PNTTM, a.FRST_REGISTER_ID
+							FROM TB_DISPLAYPAGEINFO a
+							WHERE 1=1
+		        <if test="searchKeyword != ''">
+						<choose>
+							<when test="searchCondition == 'displayTitle'">
+								and a.DISPLAY_TITLE LIKE CONCAT('%',#{searchKeyword},'%')  
+							</when>
+							<otherwise>
+								and a.DISPLAY_REMARK LIKE CONCAT('%',#{searchKeyword},'%')  
+							</otherwise>
+						</choose>
+				</if>
+				<if test="adminLevel != 'ROLE_ADMIN'">
+				   and a.PART_ID IN (
+				         SELECT PART_ID FROM TB_PARTINFO WHERE PART_ID = #{partId}
+						 union all
+						 SELECT  hi.part_id
+								 FROM ( 
+								     SELECT fn_hierarchy(part_id) AS partId, @level AS level 
+								     FROM ( 
+								            SELECT @start_with := #{partId}, 
+								                   @partId := @start_with, 
+								                   @level := 0 
+								          ) vars, TB_PARTINFO 
+								     WHERE @partId IS NOT NULL 
+								     ) ho 
+								JOIN tb_partinfo hi 
+								ON hi.part_id = ho.partId
+				   ) 
+				</if>    		        
+				ORDER BY a.DISPLAY_SEQ  DESC
+	        ) TB 
+	        ORDER BY TB.DISPLAY_SEQ  DESC
+	        limit  #{firstIndex} ,  #{recordCountPerPage}         		 	    
+   </select>
+   <select id="selectDisplayPageInfoContentCombo" resultType="DispalyPageInfo">
+          SELECT DISPLAY_SEQ, DISPLAY_TITLE 
+          FROM TB_DISPLAYPAGEINFO
+		  WHERE DISPLAY_GUBUN = #{displayGubun}
+			    AND DISPLAY_UESYN ='Y'
+		  ORDER BY DISPLAY_SEQ asc 
+   </select>
+   <select id="selectDisplayPageInfoManageDetail" resultType="DispalyPageInfoVO">
+     SELECT a.DISPLAY_SEQ, a.DISPLAY_TITLE, a.DISPLAY_REMARK, a.DISPLAY_GUBUN, 
+			a.DISPLAY_UESYN displayUseYn, a.FRST_REGIST_PNTTM, a.FRST_REGISTER_ID ,
+			a.LAST_UPDT_PNTTM, a.LAST_UPDUSR_ID,
+			a.DISPLAY_NEXTSEQ, a.DISPLAY_WIDTH, a.DISPLAY_HEIGHT
+     FROM TB_DISPLAYPAGEINFO a
+     WHERE a.DISPLAY_SEQ = #{displaySeq}
+   </select>
+
+   <select id="selectDisplayPageInfoManageView" resultType="DispalyPageInfoVO">
+     SELECT a.DISPLAY_SEQ, a.DISPLAY_TITLE, a.DISPLAY_REMARK,  b.code_nm as displayGubunTxt,
+            a.DISPLAY_GUBUN, a.DISPALY_PAGECNT displayPageCnt, a.DISPALY_TOTALTIME displayTotalTime, 
+			a.DISPLAY_UESYN displayUseYn, a.FRST_REGIST_PNTTM, a.FRST_REGISTER_ID ,
+			a.LAST_UPDT_PNTTM, a.LAST_UPDUSR_ID,
+			a.DISPLAY_NEXTSEQ, a.DISPLAY_WIDTH, a.DISPLAY_HEIGHT,
+			case DISPLAY_NEXTSEQ when  0 then '연동 콘텐츠 없음'
+			else (select c.DISPLAY_TITLE from tb_displaypageinfo c where c.DISPLAY_SEQ = a.DISPLAY_NEXTSEQ )
+			end as displayNextSeqTxt,
+			CASE a.ADMIN_LEVEL WHEN 'ROLE_ADMIN'  THEN '관리자'
+               ELSE (SELECT ifnull(part_nm , '없음') FROM tb_partinfo b WHERE b.PART_ID = a.PART_ID)
+            END as partNm		,
+            c.AUTHOR_NM as "deptLevel",
+            a.ADMIN_LEVEL, a.PART_ID, a.DISPLAY_LOCALFILE
+     FROM TB_DISPLAYPAGEINFO a, LETTCCMMNDETAILCODE b    ,  LETTNAUTHORINFO c 
+     WHERE DISPLAY_SEQ = #{displaySeq}
+           AND a.DISPLAY_GUBUN = b.code 
+           AND a.ADMIN_LEVEL = c.AUTHOR_CODE
+   </select>
+   
+   <select id="selectDisplayPageInfoCombo" resultType="DispalyPageInfo"> 
+     SELECT a.DISPLAY_SEQ, a.DISPLAY_TITLE 
+     FROM TB_DISPLAYPAGEINFO a    
+     WHERE DISPLAY_UESYN = 'Y'
+     <if test="displayGubun == 'DispalyGubun_2'">
+     	AND DISPLAY_GUBUN = #{displayGubun}
+     </if>
+     <if test="adminLevel != 'ROLE_ADMIN'">
+     	AND PART_ID = #{partId}
+     </if>
+     ORDER BY a.DISPLAY_SEQ asc 
+   </select>
+   
+   <select id="selectTimeIntevalNullCheck" resultType="DispalyPageInfo">
+      SELECT a.DISPLAY_SEQ, a.DISPLAY_TITLE,
+             a.DISPALY_PAGECNT, a.DISPALY_TOTALTIME, 
+             a.DISPLAY_WIDTH, a.DISPLAY_HEIGHT
+      FROM TB_DISPLAYPAGEINFO a    
+      WHERE DISPLAY_UESYN = 'Y'
+            AND a.DISPLAY_SEQ = #{displaySeq}
+      ORDER BY a.DISPLAY_SEQ asc 
+   </select>
+   
+   <select id="selectDisplayMaxSeq" resultType="java.lang.String">
+      SELECT MAX(DISPLAY_SEQ) FROM TB_DISPLAYPAGEINFO
+   </select>
+   <select id="selectDisplayPageInfoManageListTotCnt_S" resultType="java.lang.Integer">
+        SELECT  IFNULL(count(*),0)      
+	    FROM TB_DISPLAYPAGEINFO a
+	    WHERE  1=1
+	       <if test="searchKeyword != ''">
+						<choose>
+							<when test="searchCondition == 'displayTitle'">
+								and a.DISPLAY_TITLE LIKE CONCAT('%',#{searchKeyword},'%')  
+							</when>
+							<otherwise>
+								and a.DISPLAY_REMARK LIKE CONCAT('%',#{searchKeyword},'%')  
+							</otherwise>
+						</choose>
+			</if>					    	     
+   </select>
+   
+   
+   <insert id="insertDisplayPageInfoManage">
+      INSERT INTO TB_DISPLAYPAGEINFO( DISPLAY_TITLE, DISPLAY_REMARK, DISPLAY_GUBUN, DISPLAY_UESYN, DISPALY_PAGECNT, DISPALY_TOTALTIME,
+                                      FRST_REGIST_PNTTM, FRST_REGISTER_ID, LAST_UPDT_PNTTM, LAST_UPDUSR_ID,
+                                      DISPLAY_NEXTSEQ, DISPLAY_WIDTH, DISPLAY_HEIGHT, 
+                                      ADMIN_LEVEL, PART_ID
+                                      )
+      VALUES ( #{displayTitle, jdbcType=VARCHAR}, #{displayRemark,jdbcType=VARCHAR}, #{displayGubun,jdbcType=VARCHAR}, 
+              #{displayUseYn,jdbcType=VARCHAR }, 0, '0',  now(), #{userId,jdbcType=VARCHAR}, now() , #{userId,jdbcType=VARCHAR},
+              #{displayNextseq,jdbcType=VARCHAR}, #{displayWidth,jdbcType=VARCHAR}, #{displayHeight,jdbcType=VARCHAR},
+              #{adminLevel}, #{partId,jdbcType=VARCHAR}
+              )
+   </insert>
+   <update id="updateDisplayPageInfoManage">
+      UPDATE TB_DISPLAYPAGEINFO SET DISPLAY_TITLE = #{displayTitle}
+                             , DISPLAY_REMARK = #{displayRemark,jdbcType=VARCHAR }
+                             , DISPLAY_GUBUN = #{displayGubun,jdbcType=VARCHAR }
+                             , DISPLAY_UESYN = #{displayUseYn}
+                             , LAST_UPDT_PNTTM = now()
+                             , LAST_UPDUSR_ID = #{userId,jdbcType=VARCHAR}
+                             , DISPLAY_NEXTSEQ  = #{displayNextseq,jdbcType=VARCHAR }
+                             , DISPLAY_WIDTH = #{displayWidth,jdbcType=VARCHAR }
+                             , DISPLAY_HEIGHT = #{displayHeight,jdbcType=VARCHAR }
+                             , ADMIN_LEVEL = #{adminLevel}
+                             , PART_ID = #{partId,jdbcType=VARCHAR}
+      WHERE DISPLAY_SEQ = #{displaySeq}
+   </update>
+   <update id="updateDisplayPageFileUpdate">
+      UPDATE TB_DISPLAYPAGEINFO SET DISPLAY_LOCALFILE = #{displayLocalfile,jdbcType=VARCHAR }
+      WHERE DISPLAY_SEQ = #{displaySeq}
+   </update>
+   <update id="updateDisplayPageUpManage">
+      UPDATE TB_DISPLAYPAGEINFO SET DISPALY_PAGECNT = DISPALY_PAGECNT + 1
+      WHERE DISPLAY_SEQ = #{displaySeq}
+   </update>
+   <update id="updateDisplayPageDownManage">
+      UPDATE TB_DISPLAYPAGEINFO SET DISPALY_PAGECNT = DISPALY_PAGECNT - 1
+      WHERE DISPLAY_SEQ = #{displaySeq}
+   </update>
+   <update id="updateDisplayTimeInfoManage">
+   UPDATE TB_DISPLAYPAGEINFO SET 
+            DISPALY_PAGECNT = (SELECT ifnull(COUNT(*),0) FROM tb_displaydetail WHERE DISPLAY_SEQ = #{displaySeq})
+            , DISPALY_TOTALTIME = (SELECT ifnull(sum(DETAIL_TIME),0) FROM tb_displaydetail WHERE DISPLAY_SEQ = #{displaySeq})
+   WHERE  DISPLAY_SEQ = #{displaySeq} 
+   </update>
+   
+   <update id="updateSisplayUpdateChange">
+	    UPDATE TB_DISPLAYPAGEINFO SET 
+	            UPDATE_CHANGE = 'N', UPDATE_DATE = now()
+	    WHERE  DISPLAY_SEQ = #{displaySeq} ;
+   
+   
+        UPDATE TB_AGENTINFO set UPDATE_CHANGE = 'N', UPDATE_DATE = null
+        WHERE DISPLAY_SEQ = #{displaySeq}
+   </update>
+   
+   <delete id="deleteDisplayPageInfoManage">
+   
+      DELETE FROM   TB_DISPLAYDETAIL   
+      WHERE DISPLAY_SEQ = #{displaySeq};
+      
+      DELETE FROM      TB_DISPLAYPAGEINFO
+      WHERE DISPLAY_SEQ = #{displaySeq};
+      
+     
+      
+      
+   </delete>
+
+</mapper>

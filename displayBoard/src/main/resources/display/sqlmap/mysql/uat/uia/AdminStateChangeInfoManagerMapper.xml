@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.uat.uia.mapper.AdminStateChangeInfoManagerMapper">
+	<select id="selectAdminStateChangeManageListByPagination" resultType="camelmap">
+		SELECT SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT,
+			   TB.* FROM (
+			   SELECT
+						      a.ADMIN_ID ,
+				              a.ADMIN_NAME ,
+				              b.MANAGE_SEQ,
+				              b.USER_ID, 
+				              b.INSTT_CODE, 
+				              b.PART_ID, 
+				              b.ADMIN_STATUS, 
+				              b.ADMIN_POSITION, 
+				              b.LAST_UPDUSR_ID, 
+				              b.STATE_REGDATE, 
+				              b.CHANGE_DC
+			    FROM   TB_MANAGERINFO a, TB_MANAGERINFO_STATE_CHANAGEINFO b, TB_PARTINFO c, COMTNINSTTCODE d
+				WHERE  1=1  
+						AND a.ADMIN_ID = b.USER_ID
+						AND b.PART_ID = c.PART_ID
+						AND b.INSTT_CODE = d.INSTT_CODE
+						and a.ADMIN_ID = #{params.adminId}
+		        <if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchKeyword)">
+						<choose>
+							<when test="params.searchCondition == 'adminState'">
+								and b.ADMIN_STATUS LIKE CONCAT('%',#{params.searchKeyword},'%') 
+							</when>
+							<when test="params.searchCondition == 'adminPosition'">
+								and b.ADMIN_POSITION LIKE CONCAT('%',#{params.searchKeyword},'%') 
+							</when>
+							<otherwise>
+								and b.CHANGE_DC LIKE CONCAT('%',#{params.searchKeyword},'%') 
+							</otherwise>
+						</choose>
+				</if>		        
+				<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchUseYn)">
+					AND a.USE_YN = #{params.useYn}
+				</if>	
+				<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchPartId)">
+					AND b.PART_ID = #{params.searchPartId}
+				</if>		
+				ORDER BY a.REG_DATE  DESC
+			) TB 
+			limit #{params.firstIndex} , #{params.recordCountPerPage}    
+	</select>
+	<insert id="insertAdminStateChangeManage">
+		UPDATE TB_MANAGERINFO SET LAST_UPDT_PNTTM = NOW()
+								, LAST_UPDUSR_ID = #{updateId}
+								<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(adminStatus)">
+								, ADMIN_STATUS = #{adminStatus}
+								</if>
+								<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(adminPosition)">
+								, ADMIN_POSITION = #{adminPosition}
+								</if> 
+		WHERE ADMIN_ID = #{userId} ;
+		
+		INSERT INTO TB_MANAGERINFO_STATE_CHANAGEINFO(USER_ID, INSTT_CODE, PART_ID, ADMIN_STATUS, ADMIN_POSITION, 
+													LAST_UPDUSR_ID, CHANGE_DC)
+		SELECT ADMIN_ID, INSTT_CODE, PART_ID, ADMIN_STATUS, ADMIN_POSITION, #{updateId},  #{changeDc, jdbcType=VARCHAR}
+		FROM TB_MANAGERINFO
+		WHERE ADMIN_ID = #{userId}
+		
+	</insert>
+	<delete id="deleteAdminStateChangeAllManage">
+		DELETE FROM TB_MANAGERINFO_STATE_CHANAGEINFO WHERE USER_ID = #{userId}
+	</delete>
+	<delete id="deleteAdminStateChangeSeqManage">
+		DELETE FROM TB_MANAGERINFO_STATE_CHANAGEINFO WHERE MANAGE_SEQ = #{manageSeq}
+	</delete>
+</mapper>

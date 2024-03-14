@@ -33,7 +33,7 @@ public class UniUtilManageService {
 		return uniMapper.selectIdDoubleCheck(vo);
 	}
 
-	
+	@Transactional(readOnly = false)
 	public int deleteUniStatement(UniUtilInfo vo) throws Exception {
 		// TODO Auto-generated method stub
 		int ret = uniMapper.deleteUniStatement(vo);

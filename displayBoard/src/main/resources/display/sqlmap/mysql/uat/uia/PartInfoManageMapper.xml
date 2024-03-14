@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.uat.uia.mapper.PartInfoManageMapper">
+	<select id="selectPartInfoPageInfoManageListByPagination"  resultType="PartInfoVO">	
+		SELECT X.* , B.ALL_INSTT_NM
+		FROM (
+			SELECT 
+				CONCAT(CONCAT(LPAD('', (3*(LEVEL -1)), ' '), 
+				IF (LEVEL >1, '└','')),
+				HI.PART_NM) AS PART_NM_HI, 
+				HI.PART_NM,
+				PARENT_PART_ID, 
+				LEVEL, 
+				HI.PART_ORDER, 
+				HI.PART_ID,
+				HI.PART_USEYN,
+				HI.PART_DC,
+				HI.INSTT_CODE,
+				HI.PART_ENDYN,
+				HI.PART_HEAD_USER_ID,
+				fn_ManagerNm(HI.PART_HEAD_USER_ID) PART_HEAD_USER_NM,
+				HI.PART_END_DE,
+				DATE_FORMAT(SUBSTRING( PART_CREATE_DE, 1,8),'%Y-%m-%d') AS PART_CREATE_DE 
+			 FROM
+			 	( 
+			    	SELECT 
+			    		FN_HIERARCHY(PART_ID) AS PARTID, @LEVEL AS LEVEL, 
+						@ROWNUM :=@ROWNUM + 1 AS ORDERS 
+			     	FROM 
+			     		( 
+			            	SELECT @START_WITH := 0, 
+			                @PARTID := @START_WITH, 
+			                @LEVEL := 0 
+			          	) 
+						VARS, TB_PARTINFO , (SELECT @ROWNUM :=0) TMP
+					WHERE @PARTID IS NOT NULL 
+			     ) HO , TB_PARTINFO HI 
+			WHERE HO.PARTID = HI.PART_ID
+			<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchKeyword)">
+				<choose>
+					<when test="params.searchCondition == 'params.partId'">
+						AND PART_ID LIKE CONCAT('%',#{params.searchKeyword},'%') 
+					</when>
+					<otherwise>
+						AND PART_NM LIKE CONCAT('%',#{params.searchKeyword},'%') 
+					</otherwise>
+				</choose>
+			</if>	
+			<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchInsttCode)">
+				AND INSTT_CODE = #{params.searchInsttCode}
+			</if>
+			ORDER BY HO.ORDERS ASC  	
+		)X LEFT JOIN  COMTNINSTTCODE B
+		ON X.INSTT_CODE = B.INSTT_CODE	 	    
+	</select>
+	<select id="selectPartInfoDetail"  resultType="PartInfoVO">
+       SELECT  PART_ID, PART_NM, PART_CREATE_DE, PART_DC, PART_USEYN, PARENT_PART_ID, PART_ORDER, INSTT_CODE
+       		   PART_ENDYN, PART_END_DE, PART_HEAD_USER_ID
+	   FROM TB_PARTINFO
+	   WHERE PART_ID = #{partId}		  
+    </select>
+    
+	<select id="selectPartInfoCombo" resultType="PartInfoVO">
+		SELECT 			
+			CONCAT(CONCAT(LPAD('', (3*(LEVEL -1)), ' '), 
+			IF (LEVEL >1, '└','')),
+			HI.PART_NM) AS PART_NM_HI, 
+			HI.PART_NM,
+			PARENT_PART_ID, 
+			LEVEL , 
+			HI.PART_ORDER, 
+            HI.PART_ID, 
+            HI.PART_USEYN, 
+            HI.PART_DC,
+            HI.PART_CREATE_DE,
+            HI.PART_HEAD_USER_ID, 
+            HI.PART_END_DE,
+            HI.PART_ENDYN
+		FROM ( 
+				SELECT 
+					FN_HIERARCHY(PART_ID) AS PARTID,
+					@LEVEL AS LEVEL, 
+					@ROWNUM :=@ROWNUM + 1 AS ORDERS 
+		     	FROM 
+		     		(
+		            	SELECT 
+		            		@START_WITH := 0, 
+							@PARTID := @START_WITH, 
+		                   	@LEVEL := 0 
+					) 
+					VARS, TB_PARTINFO , (SELECT @ROWNUM :=0) TMP
+		     	WHERE @PARTID IS NOT NULL 
+		     ) HO , TB_PARTINFO HI 
+		WHERE  HO.PARTID  =HI.PART_ID
+			   AND HI.PART_USEYN ='Y'
+			<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchInsttCode)">
+				AND INSTT_CODE = #{params.searchInsttCode}
+			</if>
+		ORDER BY HO.ORDERS ASC  
+    </select>
+    
+    
+    <insert id="insertPartInfoManage">
+        INSERT INTO TB_PARTINFO (PARENT_PART_ID, PART_CREATE_DE,  PART_NM, PART_DC, PART_USEYN, 
+        						PART_ORDER, INSTT_CODE, PART_HEAD_USER_ID, PART_END_DE, PART_ENDYN)
+        VALUES (#{parentPartId},  date_format(now(), '%Y%m%d%H%i%s') , #{partNm} , 
+        		#{partDc,jdbcType=VARCHAR},#{partUseyn,jdbcType=VARCHAR}, 
+        		#{partOrder, jdbcType=VARCHAR},  #{insttCode, jdbcType=VARCHAR}, #{partHeadUserId, jdbcType=VARCHAR}, 
+        		#{partEndyn, jdbcType=VARCHAR}, #{partEndDe, jdbcType=VARCHAR}
+        )                          
+    </insert>
+    <update id="updatePartInfoManage">
+	    UPDATE  TB_PARTINFO SET PART_NM = #{partNm} 
+	                            ,PART_DC = #{partDc,jdbcType=VARCHAR} 
+	                            ,part_USEYN = #{partUseyn,jdbcType=VARCHAR} 
+	                            ,PARENT_PART_ID = #{parentPartId}  
+	                            ,PART_ORDER =  #{partOrder, jdbcType=VARCHAR}
+	                            ,INSTT_CODE =  #{insttCode, jdbcType=VARCHAR}
+	                            ,PART_HEAD_USER_ID = #{partHeadUserId, jdbcType=VARCHAR}
+	                            ,PART_ENDYN = #{partEndyn, jdbcType=VARCHAR}
+	                            <if test='#{partEndyn}.equals("Y")'>
+	                            , PART_END_DE =  date_format(now(), '%Y%m%d%H%i%s')
+	                            </if>
+	    WHERE PART_ID = #{partId};	             
+    </update>
+    <update id="updatePartEndInfoManage">
+    	UPDAETE TB_PARTINFO SET PART_ENDYN =  #{partEndyn, jdbcType=VARCHAR}
+    							, PART_END_DE =  date_format(now(), '%Y%m%d%H%i%s')
+    	WHERE PART_ID = #{partId}
+    </update>
+	<delete id="deletePartInfoManage">
+		DELETE FROM  TB_PARTINFO
+		WHERE PART_ID = #{partId}
+	</delete>
+
+</mapper>

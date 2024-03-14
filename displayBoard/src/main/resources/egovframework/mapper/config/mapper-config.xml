@@ -18,6 +18,24 @@
 		<typeAlias alias="FileVO"			type="egovframework.com.cmm.service.FileVO" />
 		<typeAlias alias="ComDefaultCodeVO" type="egovframework.com.cmm.ComDefaultCodeVO" />
 		<typeAlias alias="comDefaultVO"		type="egovframework.com.cmm.ComDefaultVO" />
+		
+		<typeAlias alias="AdminLoginVO"		type="egovframework.com.cmm.AdminLoginVO" />
+		
+		<typeAlias alias="UserAuthInfoDto"	type="com.display.backoffice.uat.uia.models.dto.UserAuthInfoDto" />
+		<typeAlias alias="AdminInfo"		type="com.display.backoffice.uat.uia.models.AdminInfo" />
+		<typeAlias alias="AdminInfoVO"		type="com.display.backoffice.uat.uia.models.AdminInfoVO" />
+		
+		<typeAlias alias="PartInfo"			type="com.display.backoffice.uat.uia.models.PartInfo" />
+		<typeAlias alias="PartInfoVO"		type="com.display.backoffice.uat.uia.models.PartInfoVO" />
+		<typeAlias alias="UniUtilInfo"		type="com.display.backoffice.uat.uia.models.UniUtilInfo" />
+		
+		<typeAlias alias="CenterInfo"		type="com.display.backoffice.bas.cnt.models.CenterInfo" />
+		<typeAlias alias="CenterInfoVO"		type="com.display.backoffice.bas.cnt.models.CenterInfoVO" />
+		<!--  전문 관련 models -->
+		<typeAlias alias="SendMsgInfoVO"		type="com.display.backoffice.sts.xml.models.SendMsgInfoVO" />
+		<typeAlias alias="SendMsgInfo"		type="com.display.backoffice.sts.xml.models.SendMsgInfo" />
+		<typeAlias alias="XmlInfo"		type="com.display.backoffice.sts.xml.models.XmlInfo" />
+		<typeAlias alias="XmlInfoVO"		type="com.display.backoffice.sts.xml.models.XmlInfoVO" />
 	</typeAliases>
     
 </configuration>

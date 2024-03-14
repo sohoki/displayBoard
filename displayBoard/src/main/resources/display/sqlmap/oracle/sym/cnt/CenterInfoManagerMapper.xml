@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.mapper.CenterInfoManageMapper">
+   <select id="selectCenterInfoManageListByPagination"  resultType="CenterInfoVO">
+	  SELECT TB.* 
+	  FROM (
+	             SELECT SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT,
+	                        ROWNUM RNUM, X.*
+	              FROM  (
+		              		  SELECT   a.CENTER_ID,  a.CENTER_NM ,  a.CENTER_IMG, a.CENTER_ZIPCODE,  
+		              		                 a.CENTER_ADDR1,  a.CENTER_ADDR2, a.CENTER_USE_YN	, a.ADMIN_APPROVAL_YN ,
+		              		                 a.CENTER_REGDATE, b.PART_NM , fn_centerCnt(CENTER_ID) as centerAgentCnt     
+							   FROM    TB_CENTERINFO a, TB_PARTINFO b
+							   WHERE a.PART_ID = b.PART_ID        
+									        <if test="searchKeyword != ''">
+													<choose>
+														<when test="searchCondition == 'centerId'">
+															AND CENTER_ID LIKE #{searchKeyword} || '%'
+														</when>
+														<otherwise>
+															AND CENTER_NM LIKE #{searchKeyword} || '%' 
+														</otherwise>
+													</choose>
+											</if>		
+											<if test="adminLevel != 'ROLE_ADMIN'">
+											    AND a.PART_ID IN (
+													         SELECT PART_ID FROM TB_PARTINFO where PART_ID = #{partId}
+															 UNION ALL
+															 SELECT PART_ID
+															 FROM TB_PARTINFO
+															 START WITH PARENT_PART_ID = #{partId}
+															 CONNECT BY PRIOR PART_ID = PARENT_PART_ID
+													   )
+											</if>      		     
+								
+		             ) X
+	        ) TB
+	        WHERE RNUM  BETWEEN #{firstIndex} + 1 AND #{firstIndex} + #{recordCountPerPage}    
+	        ORDER BY TB.CENTER_ID  DESC
+     </select>
+    <select id="selectCenterInfoManageCombo"       resultType="CenterInfoVO">
+       SELECT  CENTER_ID as centerId, CENTER_NM as centerNm
+       FROM TB_CENTERINFO
+       WHERE CENTER_USE_YN = 'Y'
+       ORDER BY  CENTER_NM  ASC
+    </select>
+    <select id="selectCenterInfoManageDetail"  resultType="CenterInfoVO">
+           SELECT  CENTER_ID as centerId, CENTER_NM as centerNm, CENTER_ZIPCODE as centerZipcode, 
+	                   CENTER_ADDR1 as centerAddr1, CENTER_ADDR2 as centerAddr2, CENTER_TEL as centerTel,
+					   CENTER_FAX as centerFax, CENTER_REG_ID as centerRegId, CENTER_REGDATE as centerRegdate, CENTER_UPDATE_USER_ID as centerUpdateId, 
+					   CENTER_UPDATE_DATE as centerUpdateDate, 
+					   CENTER_IMG as centerImg, CENTER_URL as centerUrl, CENTER_SEAT_IMG as centerSeatImg, CENTER_USE_YN as centerUseYn, 
+					   REST_INFO as restInfo, MEETINGROOM_INFO as meetingrooInfo, CENTER_INFO as       centerInfo,
+					   SUBSTR(CENTER_ZIPCODE,1,3) AS centerZipcode1, SUBSTR(CENTER_ZIPCODE,4,6) AS centerZipcode2 ,     
+					   ADMIN_APPROVAL_YN adminApprovalYn, 
+					   a.PART_ID, CENTER_FLOOR, CENTER_FLOOR_END,
+					   fn_DetailCodeNm(CENTER_FLOOR) centerFloorTxt, fn_DetailCodeNm(CENTER_FLOOR_END) centerFloorEndTxt, 
+					   b.PART_NM 
+		    FROM TB_CENTERINFO a, TB_PARTINFO b 
+		    WHERE a.PART_ID = b.PART_ID     and CENTER_ID = #{centerId}		  
+    </select>
+    
+    
+    <select id="selectCenterInfoManageListTotCnt_S"  resultType="java.lang.Integer">        
+       SELECT NVL(COUNT(*),0) FROM TB_CENTERINFO
+       where 1=1 
+                <if test="searchKeyword != ''">
+						<choose>
+							<when test="searchCondition == 'centerId'">
+								AND CENTER_ID LIKE #{searchKeyword} || '%'
+							</when>
+							<otherwise>
+								AND CENTER_NM LIKE #{searchKeyword} || '%'
+							</otherwise>
+						</choose>
+		      </if>		  
+    </select>
+     <insert id="insertCenterInfoManage" >
+        <![CDATA[
+             INSERT INTO tb_centerinfo (CENTER_ID, CENTER_NM, CENTER_ZIPCODE, CENTER_ADDR1, CENTER_ADDR2, CENTER_TEL,CENTER_FAX, 
+                                 CENTER_REG_ID, CENTER_REGDATE, CENTER_UPDATE_USER_ID, CENTER_UPDATE_DATE, CENTER_IMG, CENTER_URL, 
+                                 CENTER_SEAT_IMG, CENTER_USE_YN, REST_INFO, MEETINGROOM_INFO, CENTER_INFO, ADMIN_APPROVAL_YN,
+                                 part_id, CENTER_FLOOR, CENTER_FLOOR_END 
+                                 )
+             VALUES (FN_CENTERID(), #{centerNm},    #{centerZipcode ,jdbcType=VARCHAR}, #{centerAddr1 ,jdbcType=VARCHAR}, #{centerAddr2 ,jdbcType=VARCHAR}, 
+             #{centerTel,jdbcType=VARCHAR},  #{centerFax,jdbcType=VARCHAR},
+             #{centerUpdateId,jdbcType=VARCHAR}, SYSDATE, #{centerUpdateId,jdbcType=VARCHAR}, SYSDATE,  #{centerImg,jdbcType=VARCHAR}, #{centerUrl ,jdbcType=VARCHAR}, 
+             #{centerSeatImg,jdbcType=VARCHAR}, #{centerUseYn,jdbcType=VARCHAR}, #{restInfo,jdbcType=VARCHAR}, #{meetingroomInfo,jdbcType=VARCHAR},  #{centerInfo,jdbcType=VARCHAR} , 
+             #{adminApprovalYn, jdbcType=VARCHAR}, #{partId, jdbcType=VARCHAR}, #{centerFloor, jdbcType=VARCHAR}, #{centerFloorEnd, jdbcType=VARCHAR} 
+             )
+         ]]>
+     </insert>
+     <update id="updateCenterInfoManage" >
+		       UPDATE  tb_centerinfo SET CENTER_NM = #{centerNm} ,
+					                                CENTER_ZIPCODE = #{centerZipcode} ,
+					                                CENTER_ADDR1 = #{centerAddr1} ,
+					                                CENTER_ADDR2 = #{centerAddr2} ,
+					                                CENTER_TEL = #{centerTel,jdbcType=VARCHAR} ,
+					                                CENTER_FAX = #{centerFax,jdbcType=VARCHAR} ,
+					                                CENTER_UPDATE_USER_ID =#{centerUpdateId,jdbcType=VARCHAR} ,
+					                                CENTER_UPDATE_DATE = SYSDATE ,
+					                                CENTER_URL = #{centerUrl ,jdbcType=VARCHAR} ,
+					                                CENTER_USE_YN = #{centerUseYn,jdbcType=VARCHAR} ,
+					                                REST_INFO = #{restInfo,jdbcType=VARCHAR} ,
+					                                MEETINGROOM_INFO = #{meetingroomInfo,jdbcType=VARCHAR} ,                                
+					                                CENTER_INFO = #{centerInfo,jdbcType=VARCHAR}   
+					                                <if test="centerImg != '' ">                                    
+					                               , CENTER_IMG = #{centerImg,jdbcType=VARCHAR}
+					                               </if>
+					                                <if test="centerSeatImg !=  '' ">                     
+					                               , CENTER_SEAT_IMG = #{centerSeatImg,jdbcType=VARCHAR}
+					                               </if>                               
+					                               , ADMIN_APPROVAL_YN  = #{adminApprovalYn, jdbcType=VARCHAR}
+					                               , part_id = #{partId}
+					                               , CENTER_FLOOR = #{centerFloor, jdbcType=VARCHAR}
+					                               , CENTER_FLOOR_END = #{centerFloorEnd, jdbcType=VARCHAR} 
+		      WHERE CENTER_ID = #{centerId}           
+     </update>
+     <update id="updateFileDetailInfo">
+		   	 UPDATE LETTNFILEDETAIL set PLAY_TIME = #{playTime,jdbcType=VARCHAR},
+					   	                               FILE_WIDTH = #{fileWidth,jdbcType=VARCHAR}, 
+					   	                               FILE_HEIGHT =  #{fileHeight,jdbcType=VARCHAR} 
+		   	 WHERE ATCH_FILE_ID = #{atchFileId}
+   	 </update>
+</mapper>

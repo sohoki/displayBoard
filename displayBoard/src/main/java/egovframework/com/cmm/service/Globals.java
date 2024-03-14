@@ -79,6 +79,16 @@ public class Globals {
 	
 	public static final String STATUS_FAIL_FREEZONE = "FAIL_FREEZONE"; 
 	
+	public static final String STATUS_FLOORS = "selectFloorCombo";
+	public static final String STATUS_FLOORE = "selectFloorEndCombo";
+	public static final String STATUS_GROUP = "selectGroupCombo";
+	public static final String STATUS_DISPLAYCOMBO = "selectDisplayCombo";
+	public static final String STATUS_DISPLAYCOMBO_NEXT = "selectDisplayNextCombo";
+	
+	public static final String STATUS_WORKGROUP = "selectWorkgubun";
+	public static final String STATUS_SENDGROUP = "selectSendgubun";
+	
+	
 	public static final String STATUS_REGINFO = "regist"; 
 	
 	public static final String STATUS_LOGINFAIL = "LOGIN FAIL";
@@ -92,6 +102,19 @@ public class Globals {
 	public static final String PAGE_SIZE = "pageSize";
 	public static final String PAGE_UNIT = "pageUnit";
 	public static final String PAGE_TOTAL_COUNT = "totalCnt";
+	public static final String PAGE_TOTAL_TIME = "totTime";
+	
 	public static final String PAGE_DOMAIN = "domainInfo";
 	public static final String PAGE_SYSTEM_CODE = "systemCode";
+	//전문 
+	public static final String JSON_RESULT_COMMAND = "command_type";
+	public static final String JSON_RESULT_COMMAND_ERROR = "error_command";
+	
+	public static final String JSON_RESULT_DATA = "command_data";
+	public static final String JSON_RESULT_DATAERROR = "error_data";
+	
+	public static final String JSON_RETURN_CONFIGE = "CONINFO";
+	public static final String JSON_RETURN_MESSAGEKEY = "MESSAGEINFO";
+	
+	public static final String STATUS_NTUNIQUE = "UNIQUE FAIL";
 }

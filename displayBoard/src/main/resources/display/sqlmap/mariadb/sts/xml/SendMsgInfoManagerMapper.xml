@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.sts.xml.mapper.SendMsgInfoManagerMapper">	
+    <select id="selectSendMsgInfoManageListByPagination"  resultType="SendMsgInfoVO">	
+		 	SELECT 
+		 	SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT,
+		 	TB.* FROM (
+				      select     a.MSG_SEQ as "msgSeq", 			             
+					             a.XML_PROCESS_NAME  as "xmlProcessName",
+					             c.PROCESS_REMARK as "processRemark",			             
+					             a.SEND_RESULT  as "sendResult",
+					             a.SEND_REGDATE  as "sendRegDate",	
+					             b.AGENT_NM as "agentNm",
+		                         a.AGENT_PLAYTIME as "didPlayTime" ,
+		                         a.AGENT_MAC as "agentMac",
+		                         b.AGENT_IP as "agentIp",
+		                         a.ERROR_MESSAGE as "errorMessage"         
+				     FROM   tb_agrntsendmessageinfo a, tb_agentinfo b, tb_sendmessagetypr c
+	                 WHERE a.AGENT_CODE =  b.AGENT_CODE and        
+	                       a.XML_PROCESS_NAME = c.XML_PROCESS_NAME
+		        <if test="searchKeyword != ''">
+						<choose>
+							<when test="searchCondition == 'XML_PROCESS_NAME'">
+								and c.XML_PROCESS_NAME LIKE CONCAT('%',#{searchKeyword},'%') 
+							</when>							
+							<otherwise>
+								and a.AGENT_CODE LIKE  CONCAT('%',#{searchKeyword},'%') 
+							</otherwise>
+						</choose>
+				</if>
+				<if test="agentCode != '' ">
+				   and a.AGENT_CODE = #{agentCode} 
+				</if>		        		     
+				<if test="msgSeq !=  ''">
+				   and a.MSG_SEQ = #{msgSeq} 
+				</if>		
+				<if test="xmlProcessName != ''">
+				  and a.XML_PROCESS_NAME = #{xmlProcessName}
+				</if> 	
+				<if test="schStartDay != ''">
+				  and DATE_FORMAT(now(),'%Y%m%d') between #{schStartDay} and #{schEndDay}
+				</if> 
+				ORDER BY a.MSG_SEQ  DESC
+	        ) TB 
+	        ORDER BY TB.msgSeq  DESC
+	        limit #{firstIndex}, #{recordCountPerPage}            		 	    
+     </select>
+      <select id="selectSendMsgInfoManageListTotCnt_S"  resultType="java.lang.Integer">        
+        SELECT NVL(COUNT(*),0) 
+        FROM  tb_agrntsendmessageinfo a, tb_agentinfo b, tb_sendmessagetypr c
+	    WHERE a.AGENT_CODE =  b.AGENT_CODE and        a.XML_PROCESS_NAME = c.XML_PROCESS_NAME
+                          AND e.AGENT_CODE = a.AGENT_CODE AND d.GROUP_CODE = e.GROUP_CODE	        
+		        <if test="searchKeyword != ''">
+						<choose>
+							<when test="searchCondition == 'XML_PROCESS_NAME'">
+								and C.XML_PROCESS_NAME LIKE CONCAT('%',#{searchKeyword},'%') 
+							</when>							
+							<otherwise>
+								and A.AGENT_CODE LIKE  CONCAT('%',#{searchKeyword},'%') 
+							</otherwise>
+						</choose>
+				</if>
+				<if test="agentCode != null ">
+				   and A.AGENT_CODE = #{agentCode} 
+				</if>		        		     
+				<if test="msgSeq !=  null">
+				   and A.MSG_SEQ = #{msgSeq} 
+				</if>		
+				<if test="xmlProcessName != ''">
+				  and A.XML_PROCESS_NAME = #{xmlProcessName}
+				</if> 	
+				<if test="schStartDay != ''">
+				  and DATE_FORMAT(now(),'%Y%m%d') between #{schStartDay} and #{schEndDay}
+				</if> 			
+    </select>
+    
+    <select id="selectAgentOrderCount" resultType="java.lang.Integer">
+	     SELECT NVL(COUNT(a.MSG_SEQ),0) 
+	     FROM tb_agrntsendmessageinfo a , tb_sendmessagetypr b
+	     WHERE a.XML_PROCESS_NAME = b.XML_PROCESS_NAME
+            AND b.WORK_GUBUN = 'WORKGUBUN_2'
+            AND a.SEND_RESULT = 'N'
+            AND a.AGENT_CODE = #{agentCode} AND TRIM(a.AGENT_MAC) = #{agentMac}         
+    </select>
+    
+    <select id="selectAgentMessageCount" resultType="java.lang.Integer">
+	    SELECT ifnull(COUNT(*),0) 
+	     FROM TB_DIDSENDMESSAGE a , tb_agentinfo b
+	     WHERE  a.SEND_DIDCHECKDATE IS NULL
+                AND a.AGENT_CODE = b.AGENT_CODE 
+                AND a.AGENT_CODE = #{agentCode} AND    b.DID_MAC= #{agentMac}
+    </select>
+    
+    <select id="selectAgentOrderLst" resultType="SendMsgInfoVO">
+         SELECT  a.MSG_SEQ as msgSeq, a.XML_PROCESS_NAME as xmlProcessName, 
+                 a.SEND_REGDATE as sendRegdate , a.SEND_RESULT AS sendResult   
+	     FROM tb_agrntsendmessageinfo a , tb_sendmessagetypr b
+	     WHERE a.XML_PROCESS_NAME = b.XML_PROCESS_NAME
+               AND b.WORK_GUBUN = 'WORKGUBUN_2'
+               AND a.SEND_RESULT = 'N'
+               AND a.AGENT_CODE = #{agentCode} AND TRIM(a.AGENT_MAC) = #{agentMac}   
+         ORDER BY MSG_SEQ ASC       
+    </select>
+    
+    <select id="selectMaxSeq" resultType="java.lang.Integer">
+       SELECT  MAX(MSG_SEQ)   FROM  tb_agrntsendmessageinfo  
+    </select>
+    
+    <insert id="insertSendMsgInfoManage" >        
+             INSERT INTO tb_agrntsendmessageinfo ( AGENT_CODE, AGENT_MAC, XML_PROCESS_NAME, SEND_RESULT, SEND_REGDATE, FRST_REGIST_PNTTM, FRST_REGISTER_ID )
+             VALUES (#{agentCode}, #{agentMac}, #{xmlProcessName} , #{sendResult},    now() , 
+             now(), #{frstRegisterId,jdbcType=VARCHAR} )       
+			 
+    </insert>
+    <update id="updateSendMsgInfoManage">
+            UPDATE tb_agrntsendmessageinfo set SEND_RESULT = #{sendResult}
+                                               , AGENT_MAC = #{agentMac}
+                                               , AGENT_PLAYTIME = now()
+                                               , ERROR_MESSAGE = #{errorMessage}
+            where      MSG_SEQ = #{msgSeq}                                                                    
+    </update>
+</mapper>   

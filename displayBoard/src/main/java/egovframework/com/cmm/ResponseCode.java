@@ -3,6 +3,7 @@ package egovframework.com.cmm;
 public enum ResponseCode {
 
 	SUCCESS(200, "성공했습니다."),
+	FAIL(500, "작업 도중 문제가 발생 하였습니다."),
 	AUTH_ERROR(403, "인가된 사용자가 아닙니다."),
 	DELETE_ERROR(700, "삭제 중 내부 오류가 발생했습니다."),
 	SAVE_ERROR(800, "저장시 내부 오류가 발생했습니다."),

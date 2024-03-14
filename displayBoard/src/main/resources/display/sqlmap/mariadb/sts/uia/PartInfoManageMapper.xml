@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.uat.mapper.PartInfoManageMapper">
+   <select id="selectPartInfoPageInfoManageListByPagination"  resultType="PartInfoVO">	
+		 	
+         SELECT CONCAT(LPAD('  └', 3*(level -1)), hi.part_nm) AS partNm, parent_part_id, level , hi.part_order, 
+                hi.part_id, hi.part_useyn, DATE_FORMAT(hi.part_create_de,'%Y-%m-%d') AS partCreateDe 
+		 FROM ( 
+		     SELECT fn_hierarchy(part_id) AS partId, @level AS level, 
+		             @rownum :=@rownum + 1 as orders 
+		     FROM ( 
+		            SELECT @start_with := 0, 
+		                   @partId := @start_with, 
+		                   @level := 0 
+		          ) vars, tb_partinfo , (select @rownum :=0) TMP
+		     WHERE @partId IS NOT NULL 
+		     ) ho , tb_partinfo hi 
+		where   ho.partId  =hi.part_id
+		 
+		<if test="searchKeyword != ''">
+			<choose>
+				<when test="searchCondition == 'partId'">
+					and PART_ID LIKE CONCAT('%',#{partId},'%') 
+				</when>
+				<otherwise>
+					and PART_NM LIKE CONCAT('%',#{partNm},'%') 
+				</otherwise>
+			</choose>
+		</if>	
+		order by ho.orders asc  		 	    
+     </select>
+     <select id="selectPartInfoPageInfoManageListToCnt_s"  resultType="java.lang.Integer">        
+       SELECT ifnull(COUNT(*),0) 
+       FROM    tb_partinfo a
+	   WHERE 1=1
+              <if test="searchKeyword != ''">
+				<choose>
+					<when test="searchCondition == 'partId'">
+						and PART_ID LIKE CONCAT('%',#{partId},'%') 
+					</when>
+					<otherwise>
+						and PART_NM LIKE CONCAT('%',#{partNm},'%') 
+					</otherwise>
+				</choose>
+			</if>		
+     </select>
+  
+    <select id="selectPartInfoDetail"  resultType="PartInfoVO">
+           SELECT  PART_ID, PART_NM, PART_CREATE_DE, PART_DC, PART_USEYN, PARENT_PART_ID, PART_ORDER
+		    FROM tb_partinfo
+		    WHERE PART_ID = #{partId}		  
+    </select>
+    
+    <select id="selectPartInfoCombo" resultType="PartInfoVO">
+         SELECT CONCAT(LPAD('  └', 3*(level -1)), hi.part_nm) AS partNm, parent_part_id, level , hi.part_order, 
+                hi.part_id, hi.part_useyn, hi.part_create_de 
+		 FROM ( 
+		     SELECT fn_hierarchy(part_id) AS partId, @level AS level, 
+		             @rownum :=@rownum + 1 as orders 
+		     FROM ( 
+		            SELECT @start_with := 0, 
+		                   @partId := @start_with, 
+		                   @level := 0 
+		          ) vars, tb_partinfo , (select @rownum :=0) TMP
+		     WHERE @partId IS NOT NULL 
+		     ) ho , tb_partinfo hi 
+		where  ho.partId  =hi.part_id
+		and hi.part_useyn ='Y'
+		order by ho.orders asc  
+    </select>
+    
+    
+     <insert id="insertPartInfoManage" >
+             INSERT INTO tb_partinfo (parent_part_id, part_create_de,  part_nm, part_dc, part_USEYN, part_order)
+             VALUES (#{parentPartId},  date_format(now(), '%Y%m%d%H%i%s') , #{partNm} 
+             , #{partDc,jdbcType=VARCHAR},#{partUseyn,jdbcType=VARCHAR}, #{partOrder, jdbcType=VARCHAR}
+             )                          
+     </insert>
+     <update id="updatePartInfoManage" >
+       UPDATE  tb_partinfo SET    PART_NM = #{partNm} ,
+	                               PART_DC = #{partDc,jdbcType=VARCHAR} ,
+	                               part_USEYN = #{partUseyn,jdbcType=VARCHAR} ,
+	                               PARENT_PART_ID = #{parentPartId}  ,
+	                               PART_ORDER =  #{partOrder, jdbcType=VARCHAR}       
+      WHERE PART_ID = #{partId}           
+     </update>
+
+
+</mapper>

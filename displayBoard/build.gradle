@@ -175,10 +175,27 @@ dependencies {
 	
 	
     
+    
     testImplementation 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
     
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	
+	//비디오 관련 
+	// https://mvnrepository.com/artifact/org.jcodec/jcodec
+	implementation group: 'org.jcodec', name: 'jcodec', version: '0.1.9'
+		
+    // https://mvnrepository.com/artifact/org.jcodec/jcodec-javase
+	implementation group: 'org.jcodec', name: 'jcodec-javase', version: '0.1.9'
+	
+	// https://mvnrepository.com/artifact/javazoom/jlayer
+	implementation group: 'javazoom', name: 'jlayer', version: '1.0.1'
+	
+	// https://mvnrepository.com/artifact/com.googlecode.soundlibs/tritonus-share
+	implementation group: 'com.googlecode.soundlibs', name: 'tritonus-share', version: '0.3.7-1'
+	
+	
+	
     //testImplementation 'com.h2database:h2'
     //testImplementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.7'
     //testImplementation 'org.springframework.security:spring-security-test'

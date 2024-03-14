@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.sym.agent.mapper.OrderInfoManageMapper">
+
+   <select id="selectAgentOrderCnt" resultType="java.lang.Integer">
+      SELECT IFNULL(count(*), 0) 
+      FROM TB_ORDERINFO
+      WHERE AGENT_CODE =#{agentCode}
+   </select>
+   
+   <!-- <select id="selectAgentOrderList" resultType="OrderInfo">
+      select ORDER_SEQ, AGENT_ORDER, AGENT_ORDERCHECK FROM TB_ORDERINFO
+      where AGENT_CODE = #{agentCode} and AGENT_ORDERCHECK = 'N'
+            AND ROWNUM =  1
+      order by ORDER_SEQ asc 
+   </select> -->
+   
+   <update id="updateOrderCheck">
+      UPDATE TB_ORDERINFO SET AGENT_ORDERCHECK ='Y' ,
+      						  AGENT_ORERUPDATE = sysdate
+      WHERE ORDER_SEQ = #{orderSeq}
+   
+   </update>
+
+</mapper>

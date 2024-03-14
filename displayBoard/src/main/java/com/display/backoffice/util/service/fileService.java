@@ -1,16 +1,31 @@
 package com.display.backoffice.util.service;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
+
+import org.jcodec.api.FrameGrab;
+import org.jcodec.api.JCodecException;
+import org.jcodec.common.DemuxerTrack;
+import org.jcodec.common.NIOUtils;
+import org.jcodec.common.SeekableByteChannel;
+import org.jcodec.common.model.Picture;
+import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
+import org.jcodec.scale.AWTUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +37,111 @@ public class fileService {
 	public String fileSize(File f){
 		  return f.exists() == true ?  Long.toString(f.length()) : "0"; 			
 	}
-	
+	// 파일 확장자 변환
+	public String modifyExtension(String extension){
+	    	//기존
+	    	/*String[] type = extension.split("\\.")[1].toString().toLowerCase();*/
+	    	
+	    	//2019.12.10_JDH
+	    	//이마트 부분과 달리 해당부분에서 IMAGE MEDIA부분을 구분 못할경우 reportGubun컬럼이 null값이 들어가 무결성위반 에러 발생
+	    	String[] typeSplit = extension.split("\\.");
+	    	String type = typeSplit[typeSplit.length -1];
+	    	
+	    	
+	    	
+	    	log.info("type : " + type);
+	    	if("mp4".equals(type) || "avi".equals(type) || "mpeg".equals(type) || "webm".equals(type)) {
+	    		extension = "MEDIA";
+			} else if("jpg".equals(type) || "jpeg".equals(type) || "gif".equals(type) || "png".equals(type) || "bmp".equals(type)) {
+				extension = "IMAGE";
+			} else if("mp3".equals(type) || "wav".equals(type) || "mid".equals(type)) {
+				extension = "MUSIC";
+			} else {
+				extension = "MUSIC";
+			}
+	    	return extension;
+    } 
+	//썸네일 이미지 
+    public static Map getImageFromFrame(String _fileNm, String _filePath) {
+  		
+    	   Map<String, String> map = new HashMap<String, String>();
+  		  //aaaa
+  	      /*Calendar calendar = Calendar.getInstance();
+          java.util.Date date = calendar.getTime();
+          String today = (new SimpleDateFormat("yyyyMMddHHmmss").format(date));*/
+    	  String today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+          
+          String thumnailFull = _filePath+ "/"+ today +"_thumnail.png";
+          String thumnail = today+"_thumnail.png";
+  		
+  		  String fileName = _fileNm;// videoFile.getAbsolutePath();
+  		  
+  		  
+	  	  double frameNumber = 0d;
+	  	  try {
+	  			File videoFile = new File(fileName);
+	  			SeekableByteChannel bc = NIOUtils.readableFileChannel(videoFile);
+	  			MP4Demuxer dm = new MP4Demuxer(bc);
+	  			DemuxerTrack vt = dm.getVideoTrack();
+	  			frameNumber = vt.getMeta().getTotalDuration() / 5.0;
+	  			
+	  			Metadata metadata = null;
+				try {
+					metadata = ImageMetadataReader.readMetadata(videoFile);
+				} catch (ImageProcessingException e) {
+					// TODO Auto-generated catch block
+					log.debug("ImageProcessingException:" + e.toString());
+				}  	  
+	  	        for (Directory directory : metadata.getDirectories()) {
+	  	    	    for (com.drew.metadata.Tag tag : directory.getTags()) {
+	  	    	    	if (tag.getTagName().equals("Width") ){
+	  	    	    		map.put("fileWidth", tag.getDescription().replace(" pixels", ""));
+	  	    	    	}
+	  	    	    	if (tag.getTagName().equals("Height") ){
+	  	    	    		map.put("fileHeight", tag.getDescription().replace(" pixels", ""));
+	  	    	    	}
+	  	    	    	if (tag.getTagName().equals("Duration in Seconds") ){
+	  	    	    		//초로 환산하기 
+	  	    	    		String[] durationInfos = 	tag.getDescription().split(":");
+	  	    	    		map.put("duration", changeTime(durationInfos[0].toString(), durationInfos[1].toString(), durationInfos[2].toString())); 
+	  	    	    			
+	  	    	    	}
+	  	    	    	if (tag.getTagName().equals("File Size") ){
+	  	    	    		map.put("fileSize", tag.getDescription().replace(" bytes", ""));
+	  	    	    	}
+	  	    	    }
+	  	        }
+	  			videoFile = null;
+	  			
+	  		} catch (FileNotFoundException e1) {
+	  			log.debug("FileNotFoundException:" + e1.toString());
+	  		} catch (IOException e) {
+	  			log.debug("IOException:" + e.toString());
+	  	  }
+	  	  //파일 width/height 정리 하기
+	  	  
+	  	  
+	  	  
+	  	  try {
+	  			Picture frame = FrameGrab.getNativeFrame(new File(fileName), frameNumber);
+	  			BufferedImage img = AWTUtil.toBufferedImage(frame);
+	  			File pngFile = new File(thumnailFull);
+	  			if (!pngFile.exists()) {
+	  				pngFile.createNewFile();
+	  			}
+	  			ImageIO.write(img, "png", pngFile);
+	  			map.put("thumnail", thumnail);
+	  			
+	  			img = null;
+	  			frame = null;
+	  		} catch (IOException e) {
+	  			log.debug("IOException:" + e.toString());
+	  		} catch (JCodecException e) {
+	  			log.debug("JCodecException:" + e.toString());
+	  	  }
+	  	  return map;
+
+  	}
 	public Map getImageSize (File _fileNm){
 		Map<String, String> map = new HashMap<String, String>();
 		
@@ -52,13 +171,20 @@ public class fileService {
 	    }
 	    return map;   
 	}
-	
+	//파일 확장자 
+  	public String fileExt(File f, String _seq){
+  		return f.getName().lastIndexOf(_seq) != -1 ? f.getName().substring( f.getName().lastIndexOf(_seq) + 1) : "";
+  	}
+  //시분초 변환 
+    public static String changeTime (String hour, String min, String sec){
+    	return (Integer.parseInt(hour)*3600 + Integer.parseInt(min)*60 + sec);
+    }
 	public  String uploadFileNm(List<MultipartFile> mpf, String filePath){
 		
 		String fileNm = "";
 		String ext = "";
 		
-    try {
+		try {
   	
 	      	for (MultipartFile mFile : mpf) {
 	      	    String originalFilename = mFile.getOriginalFilename(); //파일명	   

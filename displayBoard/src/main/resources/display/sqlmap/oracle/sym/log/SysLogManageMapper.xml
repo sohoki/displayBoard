@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="aten.com.backoffice.sym.log.mapper.SysLogManageMapper">
+
+    <resultMap type="HashMap" id="clobMap">
+        	<result property="SQL_PARAM" column="SQL_PARAM" jdbcType="CLOB" javaType="java.lang.String" />
+        	<result property="METHOD_RESULT" column="METHOD_RESULT" jdbcType="CLOB" javaType="java.lang.String" />
+    </resultMap>
+    
+    <select id="selectSysLogList"  resultType="lmap" >
+          SELECT TB.* 
+		 	FROM (
+		 	           SELECT SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT,
+		 	                      ROWNUM RNUM, X.* 
+		 	           FROM (
+		 	                       SELECT a.REQUST_ID,  a.OCCRRNC_DE  OCCRRNC_DE, a.SRVC_NM,
+		 	                                  a.METHOD_NM, a.PROCESS_SE_CODE, a.PROCESS_TIME, 
+		 	                                  a.ERROR_SE,  a.ERROR_CODE, a.ERROR_CO, a.RSPNS_CODE, a.RQESTER_IP, a.RQESTER_ID, 
+		 	                                  a.SQL_PARAM, a.SQL_QUERY, a.METHOD_RESULT,
+		 	                                  b.ADMIN_NAME, c.PART_ID, c.PART_NM,
+		 	                                  CASE  a.PROCESS_SE_CODE 
+		 	                                         WHEN 'I' then '입력' 
+		 	                                         WHEN 'U' then '수정' 
+		 	                                         WHEN 'D' then '삭제'
+		 	                                         WHEN 'S' then '조회' 
+		 	                                         ELSE '에러'
+		 	                                  END  PROCESS_SE_CODE_TXT
+		 	                       FROM COMTNSYSLOG a, TB_MANAGERINFO b, TB_PARTINFO c
+		 	                       WHERE a.RQESTER_ID = b.ADMIN_ID 
+		 	                                  AND b.PART_ID = c.PART_ID
+		 	                                  <if test="!@org.apache.commons.lang3.StringUtils@isEmpty(searchStartdday)">
+											  AND a.OCCRRNC_DE  >= #{searchStartdday}
+											  </if>
+											  <if test="!@org.apache.commons.lang3.StringUtils@isEmpty(searchEndday)">
+											  <![CDATA[
+											  AND a.OCCRRNC_DE  <= #{searchEndday}
+											  ]]>
+											  </if>
+											  <if test="!@org.apache.commons.lang3.StringUtils@isEmpty(searchKeyword)">
+											       <choose>
+															<when test="searchCondition == 'userNm'">
+																AND b.ADMIN_NAME LIKE '%' || #{searchKeyword} || '%'
+															</when>
+															<otherwise>
+																AND a.CONECT_ID LIKE  '%' || #{searchKeyword} || '%' 
+															</otherwise>
+														</choose>
+											</if>
+											<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(searchProcessGubun)">
+											  AND a.PROCESS_SE_CODE  = #{searchProcessGubun}
+											  </if>
+											
+									ORDER BY a.REQUST_ID DESC
+		 	                     )X
+	        )TB
+	        WHERE TB.RNUM  BETWEEN #{firstIndex} + 1 AND #{firstIndex} + #{recordCountPerPage}  
+	        ORDER BY  TB.REQUST_ID  DESC
+    </select>
+    <!-- 시스템 로그 상세 조회 -->
+	<select id="selectSysLogInfo" resultType="lmap" resultMap="clobMap">
+		<![CDATA[
+			SELECT a.REQUST_ID,  a.OCCRRNC_DE, a.SRVC_NM, a.METHOD_NM, a.PROCESS_SE_CODE, a.PROCESS_TIME, 
+                       a.ERROR_SE,  a.ERROR_CODE, a.ERROR_CO, a.RSPNS_CODE, a.RQESTER_IP, a.RQESTER_ID, 
+                       a.SQL_PARAM, a.SQL_QUERY, a.METHOD_RESULT,
+                       b.ADMIN_NAME, c.PART_ID, c.PART_NM,
+                       CASE  a.PROCESS_SE_CODE 
+                              WHEN 'I' then '입력' 
+                              WHEN 'U' then '수정' 
+                              WHEN 'D' then '삭제'
+                              WHEN 'S' then '조회' 
+                              ELSE '에러'
+                       END  PROCESS_SE_CODE_TXT
+			FROM COMTNSYSLOG a, TB_MANAGERINFO b, TB_PARTINFO c
+			WHERE a.RQESTER_ID = b.ADMIN_ID 
+		 	           AND b.PART_ID = c.PART_ID
+			           AND a.REQUST_ID = #{requstId}
+			]]>
+	</select>
+	
+    <!-- 시스템 로그 등록 -->
+	<insert id="logInsertSysLog" >
+		<![CDATA[
+			INSERT INTO COMTNSYSLOG
+				( REQUST_ID
+				  , SRVC_NM
+				  , METHOD_NM
+				  , PROCESS_SE_CODE
+				  , PROCESS_TIME
+				  , RQESTER_ID
+				  , RQESTER_IP
+				  , ERROR_CODE
+				  , OCCRRNC_DE 
+				  , SQLID
+				  , SQL_PARAM
+				  , SQL_QUERY
+				  , METHOD_RESULT
+				  )
+			VALUES ( #{requstId}
+				  , #{srvcNm}
+				  , #{methodNm}
+				  , #{processSeCode}
+				  , #{processTime}
+				  , #{rqesterId}
+				  , #{rqesterIp}
+				  , #{errorCode}
+				  , TO_CHAR(sysdate,'yyyyMMdd')
+				  , #{sqlid ,jdbcType=VARCHAR}
+				  , #{sqlParam, jdbcType=VARCHAR}
+				  , #{sqlQuery, jdbcType=VARCHAR}
+				   , #{methodResult, jdbcType=VARCHAR}
+	        	  )
+		]]>
+	</insert>
+
+	
+
+	
+
+	<!-- 시스템 로그 전날 로그 요약  등록 -->
+	<insert id="logInsertSysLogSummary">
+		
+		<![CDATA[
+			INSERT INTO COMTSSYSLOGSUMMARY
+			SELECT TO_CHAR(b.OCCRRNC_DE,'YYYYMMDD')
+			     , b.SVC_NM
+			     , b.METHOD_NM
+			     , SUM(CASE WHEN b.PROCESS_SE_CODE = 'C' THEN 1 ELSE 0 END) AS CREAT_CO
+			     , SUM(CASE WHEN b.PROCESS_SE_CODE = 'U' THEN 1 ELSE 0 END) AS UPDT_CO
+			     , SUM(CASE WHEN b.PROCESS_SE_CODE = 'R' THEN 1 ELSE 0 END) AS RDCNT
+			     , SUM(CASE WHEN b.PROCESS_SE_CODE = 'D' THEN 1 ELSE 0 END) AS DELETE_CO
+			     , 0 AS OUTPT_CO
+			     , 0 AS ERROR_CO
+			  FROM COMTNSYSLOG b
+			 WHERE NOT EXISTS (SELECT c.OCCRRNC_DE
+			                     FROM COMTSSYSLOGSUMMARY c
+			                    WHERE c.OCCRRNC_DE = TO_CHAR((SYSDATE - 1), 'YYYYMMDD')
+			                  )
+			   AND TO_CHAR(b.OCCRRNC_DE, 'YYYYMMDD') = TO_CHAR((SYSDATE - 1), 'YYYYMMDD')
+			 GROUP BY TO_CHAR(b.OCCRRNC_DE,'YYYYMMDD')
+				    , b.SVC_NM
+				    , b.METHOD_NM
+				    ]]>
+
+		
+	</insert>
+
+	<!-- 시스템 로그 6개월전 로그 삭제 -->
+	<delete id="logDeleteSysLogSummary">
+		<![CDATA[
+			DELETE FROM COMTNSYSLOG
+			 WHERE TO_CHAR(OCCRRNC_DE, 'YYYY-MM-DD') < TO_CHAR(ADD_MONTHS(SYSDATE, -12), 'YYYY-MM-DD')
+		]]>
+	</delete>
+
+
+</mapper>
