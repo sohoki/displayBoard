@@ -64,33 +64,14 @@ public class FileUpladController {
 	private ContentFileInfoManageService conFileService;
     
     
-	@RequestMapping(value = "/fileUpload", method = RequestMethod.GET)
-    public String dragAndDrop(Model model) {         
-        return "fileUpload";         
-    }
 	
-	/*
-	@RequestMapping(value = "/backoffice/upload/fileUpload.do") //ajax에서 호출하는 부분
-	@ResponseBody
-    public Map upload(MultipartHttpServletRequest multipartRequest
-    		          , HttpServletRequest request) throws Exception { 
-		
-			   Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-	           if(!isAuthenticated) {
-	        	   Map<String, String> map = new HashMap<String, String>();
-	               map.put(Globals.STATUS_MESSAGE, "fail Login Error");
-	               return map;
-	           }else {
-	               return conFileService.fileUpload(multipartRequest);
-	           }	        	        
-    }	
-    */
+	
 	@RequestMapping(value="/backoffice/popup/fileView.do")
 	public String selectFileView (@ModelAttribute("AdminLoginVO") LoginVO loginVO
-			                                   , ContentFileInfoVO vo
-								               , HttpServletRequest request
-											   , BindingResult bindingResult
-											   , ModelMap model) throws  Exception{			
+                                   , ContentFileInfoVO vo
+					               , HttpServletRequest request
+								   , BindingResult bindingResult
+								   , ModelMap model) throws  Exception{			
 		   String atchFileId = request.getParameter("atchFileId") != null ? request.getParameter("atchFileId") : "";
 		   model.addAttribute("regist",  conFileService.selectFileDetail(atchFileId));				
 		   return "/backoffice/popup/FileView";

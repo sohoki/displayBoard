@@ -12,44 +12,59 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.display.backoffice.bas.cnt.service.CenterInfoService;
+import com.display.backoffice.bas.code.service.EgovCcmCmmnDetailCodeManageService;
+import com.display.backoffice.bas.code.web.EgovCcmCmmnDetailCodeManageController;
 import com.display.backoffice.sts.xml.models.SendMsgInfo;
 import com.display.backoffice.sts.xml.service.SendMsgInfoManageService;
 import com.display.backoffice.sym.agent.models.AgentInfo;
 import com.display.backoffice.sym.agent.service.AgentInfoManageService;
 import com.display.backoffice.sym.agent.models.AgentInfoVO;
-import com.display.backoffice.sym.ccm.cde.service.EgovCcmCmmnDetailCodeManageService;
-import com.display.backoffice.sym.cnt.service.CenterInfoService;
-import com.display.backoffice.sym.cnt.models.CenterInfoVO;
 import com.display.backoffice.sym.monter.service.DetailPageInfoManageService;
 import com.display.backoffice.sym.monter.models.DetailPageInfoVO;
 import com.display.backoffice.sym.monter.models.DispalyPageInfoVO;
 import com.display.backoffice.sym.monter.service.DisplayPageInfoManageService;
-import com.display.backoffice.uat.service.PartInfoManageService;
-import com.display.backoffice.uat.models.UniUtilInfo;
-import com.display.backoffice.uat.service.UniUtilManageService;
+import com.display.backoffice.uat.uia.service.PartInfoManageService;
+import com.display.backoffice.uat.uia.service.UniUtilManageService;
+import com.display.backoffice.util.service.UtilInfoService;
 import egovframework.com.cmm.AdminLoginVO;
 import egovframework.com.cmm.EgovMessageSource;
 import egovframework.com.cmm.service.Globals;
+import egovframework.com.cmm.service.ResultVO;
+import egovframework.com.jwt.config.JwtVerification;
+import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
+
 import org.egovframe.rte.fdl.cmmn.trace.LeaveaTrace;
 import org.egovframe.rte.fdl.property.EgovPropertyService;
-import org.egovframe.rte.fdl.security.userdetails.util.EgovUserDetailsHelper;
 
-
+@Api(tags = {"에이전트 정보 API"})
+@Slf4j
 @RestController
-@RequestMapping("/backoffice/basicManage")
+@RequestMapping("/api/backoffice/basicManage/agent")
 public class AgentInfoMangeController {
 
 	
-private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeController.class);
-	
+	@Value("${page.pageUnit}")
+    private int pageUnitSetting ;
+    
+    @Value("${page.pageSize}")
+    private int pageSizeSetting ;
+    
+	/** JwtVerification */
+	@Autowired
+	private JwtVerification jwtVerification;
 	
     @Autowired
 	protected EgovMessageSource egovMessageSource;
@@ -89,29 +104,45 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
     LeaveaTrace leaveaTrace;
     public static final int PORT = 9;  
 	
-	@RequestMapping(value="AgentInfoPreview.do")
-	public ModelAndView  selectAgentPreview( HttpServletRequest request
-			                                                   ) throws Exception {
-		ModelAndView model = new ModelAndView("/backoffice/contentManage/agentInfoPreview");
+	@GetMapping(value="AgentInfoPreview/{agentCode}.do")
+	public ModelAndView  selectAgentPreview(@PathVariable String agentCode, 
+											@RequestParam Map<String, String> searchVO,
+											HttpServletRequest request) throws Exception {
+		//ModelAndView model = new ModelAndView("/backoffice/contentManage/agentInfoPreview");
 	    
-		String agentCode = request.getParameter("agentCode") != null ? request.getParameter("agentCode") : "";
-		String detailSeq_N = request.getParameter("detailSeq_N") != null ? request.getParameter("detailSeq_N") : "";
-		AgentInfoVO vo = agentService.selectAgentPageInfoManageDetail(agentCode);
-		vo.setDetailSeq_N(detailSeq_N);
-		DetailPageInfoVO detailVO = new DetailPageInfoVO();
-		detailVO.setDisplaySeq( String.valueOf( vo.getDisplaySeq()));			
-		model.addObject("regist", vo);
 		
-		detailVO.setReplacePath(propertiesService.getString("Globals.fileStorePathReplace"));
-		detailVO.setAgentCode(agentCode);
-		model.addObject("resultDetailList",   detailService.selectAgentPreviewList(detailVO) );
-		model.addObject("totCnt",   detailService.selectDetailPageInfoManageListTotCnt_S(detailVO) );
+		
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
+		try {
+			if (!jwtVerification.isVerification(request)) {
+	    		ResultVO resultVO = new ResultVO();
+				return jwtVerification.handleAuthError(resultVO); // 토큰 확
+	    	}
+			String detailSeq_N = UtilInfoService.NVLObj(searchVO.get("detailSeq_N"), "");
+			
+			AgentInfoVO vo = agentService.selectAgentPageInfoManageDetail(agentCode);
+			vo.setDetailSeq_N(detailSeq_N);
+			DetailPageInfoVO detailVO = new DetailPageInfoVO();
+			detailVO.setDisplaySeq( String.valueOf( vo.getDisplaySeq()));			
+			model.addObject(Globals.STATUS_REGINFO, vo);
+			
+			detailVO.setReplacePath(propertiesService.getString("Globals.fileStorePathReplace"));
+			detailVO.setAgentCode(agentCode);
+			model.addObject("resultDetailList",   detailService.selectAgentPreviewList(detailVO) );
+			model.addObject(Globals.PAGE_TOTAL_COUNT,   detailService.selectDetailPageInfoManageListTotCnt_S(detailVO) );
+		}catch(Exception e) {
+			log.error("selectAgentPreview:" + e.toString());
+			model.addObject(Globals.STATUS_MESSAGE, this.egovMessageSource.getMessage("fail.request.msg"));
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+		}
+		
 	    
 		return model;
 	}
 	@RequestMapping(value="AgentWakeOnLenInfo.do")
 	public ModelAndView  selectAgentWakeOnLen( HttpServletRequest request ) throws Exception {
-		ModelAndView model = new ModelAndView(Globals.JSONVIEW);
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
+		
 		String agentCode = request.getParameter("agentCode") != null ? request.getParameter("agentCode") : "";
 		AgentInfoVO vo = agentService.selectAgentPageInfoManageDetail(agentCode);
 		
@@ -119,7 +150,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
         String macStr = vo.getAgentMac();
 	        
         try {
-        	LOGGER.debug("macStr:" + macStr);
+        	log.debug("macStr:" + macStr);
             byte[] macBytes = getMacBytes(macStr);
             byte[] bytes = new byte[6 + 16 * macBytes.length];
             for (int i = 0; i < 6; i++) {
@@ -128,7 +159,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
             for (int i = 6; i < bytes.length; i += macBytes.length) {
                 System.arraycopy(macBytes, 0, bytes, i, macBytes.length);
             }
-            LOGGER.debug("macBytes:" + macBytes);
+            log.debug("macBytes:" + macBytes);
             InetAddress address = InetAddress.getByName(ipStr);
             DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, PORT);
             DatagramSocket socket = new DatagramSocket();
@@ -138,7 +169,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
 			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
         }
         catch (Exception e) {
-        	LOGGER.error("AgentWakeOnLenInfo:" + e.toString());
+        	log.error("AgentWakeOnLenInfo:" + e.toString());
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.request.msg") );	
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
         }
@@ -195,9 +226,9 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
 		     model.setViewName("/backoffice/operManage/dashBoardInfo");
 	        
 		}catch(NullPointerException e){
-			LOGGER.debug("ERROR");
+			log.debug("ERROR");
 		}catch(Exception e){
-			LOGGER.debug("ERROR");
+			log.debug("ERROR");
 		}
 		return model;
 	}
@@ -238,11 +269,11 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
 		     model.setViewName(Globals.JSONVIEW);
 		      
 		}catch(NullPointerException e){
-			LOGGER.error("selectDashboardJson  error: "  + e.toString());
+			log.error("selectDashboardJson  error: "  + e.toString());
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));	
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 		}catch(Exception e){
-			LOGGER.error("selectDashboardJson  error: "  + e.toString());
+			log.error("selectDashboardJson  error: "  + e.toString());
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));	
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 		}
@@ -282,14 +313,14 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
         			
     			}
     		}catch(Exception e){
-    			LOGGER.debug("error:"+ e.toString());
+    			log.debug("error:"+ e.toString());
     		}
     	}
-    	LOGGER.debug("===========================================sminfoLists" + sminfoLists.size());
+    	log.debug("===========================================sminfoLists" + sminfoLists.size());
     	model =  sendMsgService.insertSendMsgInfoManageList(sminfoLists);
     	model.setViewName(Globals.JSONVIEW);
 		
-    	LOGGER.debug("model:" + model.toString());
+    	log.debug("model:" + model.toString());
     	return model ;
 	}
 	@RequestMapping(value="AgentInfoCenterList.do")
@@ -320,11 +351,11 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
 			model.setViewName(Globals.JSONVIEW);
 			
 		}catch(NullPointerException e){
-			LOGGER.error("deleteEqupInfoManage  error: "  + e.toString());
+			log.error("deleteEqupInfoManage  error: "  + e.toString());
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.delete"));	
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 		}catch(Exception e){
-			LOGGER.error("deleteEqupInfoManage  error: "  + e.toString());
+			log.error("deleteEqupInfoManage  error: "  + e.toString());
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.delete"));	
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 		}
@@ -355,7 +386,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
 			  }else {
 				   searchVO.setPageUnit(propertiesService.getInt("pageUnit"));   
 			  }
-			  LOGGER.error("getPageUnit:" + searchVO.getPageUnit());  
+			  log.error("getPageUnit:" + searchVO.getPageUnit());  
 			  searchVO.setPageSize(propertiesService.getInt("pageSize"));
 			  //에이전트 상태값
 			  searchVO.setErrorCnt(propertiesService.getInt("agentErrCnt"));
@@ -367,9 +398,9 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
 			  model.addObject("selectAgentContentGubun", cmmnDetailService.selectCmmnDetailCodeList("AGENT_CONTENT") );
 			  model.setViewName("/backoffice/basicManage/agentInfoList");
 		  }catch(NullPointerException e){
-			  LOGGER.error("selectEqupInfoManageListByPagination error:" + e.toString());  
+			  log.error("selectEqupInfoManageListByPagination error:" + e.toString());  
 		  }catch(Exception e){
-			  LOGGER.error("selectEqupInfoManageListByPagination error:" + e.toString());  
+			  log.error("selectEqupInfoManageListByPagination error:" + e.toString());  
 		  }
 		  return model;	
 	}
@@ -393,7 +424,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
 		      commandMap.put("recordCountPerPage", propertiesService.getInt("pageUnit"));
 		      commandMap.put("agentContentGubun",   commandMap.get("displayGubun").equals("DispalyGubun_1") ? "AGENT_CONTENT_1" : "AGENT_CONTENT_2" );
 		      
-		      LOGGER.debug("commandMap:" + commandMap.toString());
+		      log.debug("commandMap:" + commandMap.toString());
 		      model = agentService.selectDisplayStageChangePageList(commandMap) ; 
 		      model.setViewName(Globals.JSONVIEW);
 	      }
@@ -507,11 +538,11 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
 		    	  throw new Exception();		    	  
 		    }
 		}catch (NullPointerException e){
-			LOGGER.error("deleteEqupInfoManage  error: "  + e.toString());
+			log.error("deleteEqupInfoManage  error: "  + e.toString());
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.delete"));	
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 		}catch (Exception e){
-			LOGGER.error("deleteEqupInfoManage  error: "  + e.toString());
+			log.error("deleteEqupInfoManage  error: "  + e.toString());
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.delete"));	
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 		}
@@ -552,11 +583,11 @@ private static final Logger LOGGER = LoggerFactory.getLogger(AgentInfoMangeContr
 			}
 			
 		}catch (NullPointerException e){
-			LOGGER.error("updateequpInfoManage ERROR:" + e.toString());
+			log.error("updateequpInfoManage ERROR:" + e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.update"));	
 		}catch (Exception e){
-			LOGGER.error("updateequpInfoManage ERROR:" + e.toString());
+			log.error("updateequpInfoManage ERROR:" + e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.update"));	
 		}	
