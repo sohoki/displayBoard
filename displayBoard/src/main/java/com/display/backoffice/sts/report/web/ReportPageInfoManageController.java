@@ -1,86 +1,72 @@
 package com.display.backoffice.sts.report.web;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
+
 import java.io.OutputStream;
-import java.nio.file.Paths;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-
-import egovframework.com.cmm.AdminLoginVO;
 import com.display.backoffice.sym.monter.service.DetailPageInfoManageService;
-import com.display.backoffice.sym.monter.models.DetailPageInfoVO;
+import com.display.backoffice.uat.uia.service.UniUtilManageService;
+import com.display.backoffice.util.service.UtilInfoService;
+import com.display.backoffice.util.service.fileService;
 import com.display.backoffice.sts.cnt.models.ContentFileInfo;
 import com.display.backoffice.sts.cnt.service.ContentFileInfoManageService;
-import com.display.backoffice.sts.cnt.web.FileUpladController;
 import com.display.backoffice.sts.report.models.ReportPageInfo;
 import com.display.backoffice.sts.report.models.ReportPageInfoVO;
 import com.display.backoffice.sts.report.service.ReportPageInfoManageService;
-import com.display.backoffice.uat.models.UniUtilInfo;
-import com.display.backoffice.uat.service.UniUtilManageService;
-import com.display.backoffice.util.web.service.fileService;
 import egovframework.com.cmm.EgovMessageSource;
 import egovframework.com.cmm.service.Globals;
+import egovframework.com.cmm.service.ResultVO;
+import egovframework.com.jwt.config.JwtVerification;
+import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
+
 import org.egovframe.rte.fdl.idgnr.EgovIdGnrService;
 import org.egovframe.rte.fdl.property.EgovPropertyService;
-import org.egovframe.rte.fdl.security.userdetails.util.EgovUserDetailsHelper;
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
-import com.display.backoffice.sym.ccm.cde.service.EgovCcmCmmnDetailCodeManageService;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.servlet.ModelAndView;
-import org.springmodules.validation.commons.DefaultBeanValidator;
 
-
+@Api(tags = {"Report 정보 API"})
+@Slf4j
 @RestController
-@RequestMapping("/backoffice/contentManage")
+@RequestMapping("/api/backoffice/content/resport")
 public class ReportPageInfoManageController {
 
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(ReportPageInfoManageController.class);
+	@Value("${page.pageUnit}")
+    private int pageUnitSetting ;
+    
+    @Value("${page.pageSize}")
+    private int pageSizeSetting ;
+    
+    @Value("${Globals.filePath}")
+    private String filePath ;
+    
+    
 	
 	
 	@Autowired
 	protected EgovMessageSource egovMessageSource;
 	
 	@Autowired
-    protected EgovPropertyService propertiesService;
-	
-	@Autowired
-    protected ReportPageInfoManageService reportService;
-	
-	@Autowired
-	private EgovCcmCmmnDetailCodeManageService cmmnDetailService;
+    protected EgovPropertyService propertiesService;  
 	
 	@Autowired
 	private DetailPageInfoManageService detailService;
@@ -90,176 +76,199 @@ public class ReportPageInfoManageController {
 	
     @Autowired
 	private ContentFileInfoManageService conFileService;
-	
+    
+    @Autowired
+    private ReportPageInfoManageService reportService;
+    
     @Resource(name="egovFileIdGnrService")
-	private EgovIdGnrService egovFileIdGnrService;   
+	private EgovIdGnrService egovFileIdGnrService; 
+	
+    /** JwtVerification */
+	@Autowired
+	private JwtVerification jwtVerification;
     
     fileService uploadFile = new fileService();
 	
 	
-	@RequestMapping(value="pageInfoList.do")
-	public ModelAndView  selectEqupInfoManageListByPagination(@ModelAttribute("loginVO") AdminLoginVO loginVO
-														, @ModelAttribute("searchVO") ReportPageInfoVO searchVO
-														, HttpServletRequest request
-														, BindingResult bindingResult	) throws Exception {
-		 ModelAndView model = new ModelAndView("/backoffice/contentManage/PageInfoList");
-		 Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-	     if(!isAuthenticated) {
-	    		model.addObject(Globals.STATUS_MESSAGE , egovMessageSource.getMessage("fail.common.login"));
-	    		model.addObject(Globals.STATUS , Globals.STATUS_LOGINFAIL);
-	    		model.setViewName("/backoffice/login");
-	    		return model;
-	     }
-         model.addObject("selectCodeDM", cmmnDetailService.selectCmmnDetailCombo("reportGubun"));  
-		 model.addObject("regist", searchVO);
+	
+	@PostMapping(value="pageReportInfoList.do")
+	public ModelAndView pageInfoListInfo (@RequestBody  ReportPageInfoVO searchVO
+										, HttpServletRequest request)throws Exception {
 		
-		return model;	
-	}
-	@RequestMapping(value="pageReportInfoList.do")
-	public ModelAndView pageInfoListInfo (@ModelAttribute("loginVO") AdminLoginVO loginVO
-			                                               , @RequestBody  ReportPageInfoVO searchVO
-			                                               , HttpServletRequest request
-			                                    		   , BindingResult bindingResult )throws Exception {
 		
-		        ModelAndView model = new ModelAndView( );
-				
-				//공용 확인 하기 
-			    Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-		        if(!isAuthenticated) {
-		    		model.addObject(Globals.STATUS_MESSAGE , egovMessageSource.getMessage("fail.common.login"));
-		    		model.addObject(Globals.STATUS , Globals.STATUS_LOGINFAIL );
-		    		return model;
-		    		
-		        }else {
-			    	 HttpSession httpSession = request.getSession(true);
-			    	 loginVO = (AdminLoginVO)httpSession.getAttribute("AdminLoginVO");
-				     searchVO.setAdminLevel(loginVO.getAdminLevel());
-				     searchVO.setPartId(loginVO.getPartId());
-		        }
-		        if( searchVO.getPageUnit() > 0  ){    	   
-			    	   searchVO.setPageUnit(searchVO.getPageUnit());
-				}else {
-						 searchVO.setPageUnit(propertiesService.getInt("pageUnit"));   
-				}
-				searchVO.setPageSize(propertiesService.getInt("pageSize"));
-			    if  (searchVO.getReportUseYn() == null) { searchVO.setReportUseYn("");}
-			    
-			    model =  reportService.selectReportPageInfoManageListByPagination(searchVO);
-			    model.setViewName(Globals.JSONVIEW);
-			    return model;
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		
-	}
-	//파일 업로드 파일 올리기
-	@RequestMapping (value="fileIupload.do")
-	public ModelAndView fileUplad(@ModelAttribute("loginVO") AdminLoginVO loginVO			
-												, HttpServletRequest request
-												, BindingResult bindingResult) throws Exception{			
-		ModelAndView model = new ModelAndView("/backoffice/contentManage/FileUpload");
-		return model;		
-	}
-	@RequestMapping (value="createPage.do")
-	public ModelAndView createPage(@ModelAttribute("loginVO") AdminLoginVO loginVO			
-							, HttpServletRequest request
-							, BindingResult bindingResult) throws Exception{	
-		ModelAndView model = new ModelAndView("/backoffice/popup/createPage");
-		return model;		
+		try {
+			
+	        if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}else {
+        		//여기 부분 수정 
+        		String[] userInfo = jwtVerification.getTokenUserInfo(request);
+        		searchVO.setAdminLevel( userInfo[2]);
+			    searchVO.setPartId( userInfo[3]);
+        	}
+	        
+	        searchVO.setPageUnit(UtilInfoService.NVL(searchVO.getPageUnit(), pageUnitSetting) );
+			searchVO.setPageSize(UtilInfoService.NVL(searchVO.getPageSize(), pageSizeSetting) );
+			searchVO.setPageIndex(UtilInfoService.NVL(searchVO.getPageIndex(), 1) );
+			
+			
+	        /** pageing */       
+		   	PaginationInfo paginationInfo = new PaginationInfo();
+			paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
+			paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
+			paginationInfo.setPageSize(searchVO.getPageSize());
+
+			searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+			searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
+			searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+			searchVO.setReplacePath(filePath);
+			
+	        List<ReportPageInfoVO> list = reportService.selectReportPageInfoManageListByPagination(searchVO);
+	        model.addObject(Globals.JSON_RETURN_RESULT_LIST,  list );
+		    int totCnt = list.size() > 0 ? list.get(0).getTotalRecordCount() : 0;
+		    paginationInfo.setTotalRecordCount(totCnt);
+		    model.addObject(Globals.PAGE_INFO, paginationInfo);
+		    model.addObject(Globals.PAGE_TOTAL_COUNT, totCnt);
+		    model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+		}catch (NullPointerException e){
+			log.error("selectContentSchList ERROR: "  + e.toString());
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+		}catch (Exception e){
+			log.error("selectContentSchList ERROR: "  + e.toString());
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+		}
+		return model;
 	}
 	
-	@RequestMapping (value="pageInfoView.do")
-	public ModelAndView selecEqupInfoManageView(@ModelAttribute("loginVO") AdminLoginVO loginVO
-                                                ,@RequestBody  ReportPageInfoVO vo
-                                                , HttpServletRequest request
-                                    			, BindingResult bindingResult ) throws Exception{	
+	@PostMapping (value="pageInfoView.do")
+	public ModelAndView selecEqupInfoManageView(@RequestBody  ReportPageInfoVO vo
+                                                , HttpServletRequest request) throws Exception{	
 		
 		
-		ModelAndView model = new ModelAndView(Globals.JSONVIEW);		
-		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-        if(!isAuthenticated) {
-    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-    		model.addObject("status", "LOGIN FAIL");
-    		return model;
-        }
-        
-        model.addObject("status", Globals.STATUS_SUCCESS);
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
+		if (!jwtVerification.isVerification(request)) {
+    		ResultVO resultVO = new ResultVO();
+			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+    	}
+        model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
         ReportPageInfoVO report = reportService.selectReportPageInfoManageDetail(vo.getReportSeq());
-        model.addObject("reportInfo", report);
+        model.addObject(Globals.JSON_RESULT_REPORT, report);
 		return model;
 	}
 	//삭제 확인
 	@RequestMapping (value="reportDelete.do", method=RequestMethod.POST)
-	public ModelAndView deleteReportInfoManage(@ModelAttribute("loginVO") AdminLoginVO loginVO,
-			                                                           @RequestParam("reportSeqDel") String reportSeqDel)  throws Exception{
+	public ModelAndView deleteReportInfoManage(@RequestParam("reportSeqDel") String reportSeqDel
+											, HttpServletRequest request)  throws Exception{
 		
-		ModelAndView model = new ModelAndView(Globals.JSONVIEW);
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		
 		try{
-			detailService.updateDisplayPageChangeInfo(reportSeqDel);			
-			model.addObject("status", Globals.STATUS_SUCCESS);
+			if (!jwtVerification.isVerification(request)) {
+	    		ResultVO resultVO = new ResultVO();
+				return jwtVerification.handleAuthError(resultVO); // 토큰 확
+	    	}
+			int ret = detailService.updateDisplayPageChangeInfo(reportSeqDel);	
+			if (ret > 0){
+				model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+				model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("sucess.common.delete"));
+			}else {
+				throw new Exception();
+			}
+			
+			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 			return model;
 		}catch(NullPointerException e){
-			model.addObject("status", Globals.STATUS_FAIL);
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.delete"));
 			return model;
 		}catch(Exception e){
-			model.addObject("status", Globals.STATUS_FAIL);
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.delete"));
 			return model;
 		}
 	}
 	
-	@RequestMapping (value="reportPreView.do")
-	public ModelAndView screenUrlPagePreview(HttpServletRequest request) throws Exception{
+	@RequestMapping (value="preview/{reportSeq}.do")
+	public ModelAndView screenUrlPagePreview(@PathVariable String reportSeq, 
+											HttpServletRequest request) throws Exception{
 		
 		ModelAndView model = new ModelAndView("/backoffice/contentManage/preView");
 		try{
-			
-	        String reportSeq = request.getParameter("reportSeq") != null ? request.getParameter("reportSeq") : "1";
-	        model.addObject("status", Globals.STATUS_SUCCESS);
+			if (!jwtVerification.isVerification(request)) {
+	    		ResultVO resultVO = new ResultVO();
+				return jwtVerification.handleAuthError(resultVO); // 토큰 확
+	    	}
+	        
+	        model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 	        ReportPageInfoVO report = reportService.selectReportPageInfoManageDetail(reportSeq);
-	        model.addObject("reportInfo", report);
+	        model.addObject(Globals.JSON_RESULT_REPORT, report);
 		}catch(NullPointerException e){
-			LOGGER.debug("error:" + e.toString());
+			log.debug("error:" + e.toString());
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.msg"));
 		}catch(Exception e){
-			LOGGER.debug("error:" + e.toString());
+			log.debug("error:" + e.toString());
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.msg"));
 		}
 		
 		return model;
 	}
 	
-	@RequestMapping (value="pageInfoUpdate.do", method=RequestMethod.POST)
+	@PostMapping (value="pageInfoUpdate.do")
 	public ModelAndView updateequpInfoManage(@RequestBody ReportPageInfo vo	
-							                                         , HttpServletRequest request                         				 
-															  	     , BindingResult result) throws Exception{
+											, HttpServletRequest request) throws Exception{
 		
-		ModelAndView model = new 	ModelAndView(Globals.JSONVIEW);
-		
-		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-        if(!isAuthenticated) {
-    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-    		model.addObject("status", Globals.STATUS_LOGINFAIL);
-    		return model;
-        }
-		vo.setUserId(EgovUserDetailsHelper.getAuthenticatedUser().toString() );
-		model = reportService.updateReportPageInfoManage(vo);
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
+		try{
+			if (!jwtVerification.isVerification(request)) {
+	    		ResultVO resultVO = new ResultVO();
+				return jwtVerification.handleAuthError(resultVO); // 토큰 확
+	    	}else {
+	    		vo.setUserId(jwtVerification.getTokenUserName(request));
+	    	}
+			
+			int ret = reportService.updateReportPageInfoManage(vo);
+			if (ret > 0) {
+	    		model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+	    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.request.msg"));
+	    	}
+	    	else {
+	    		model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+		    	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.msg"));
+	    	}
+		}catch(Exception e){
+			log.error("updateReportPageInfoManage ERROR:" + e.toString() );
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.update"));
+		}
 		return model;
+		
+		
 	}
 	
-	@RequestMapping(value = "reportUpload.do", method = RequestMethod.POST)
-    public ModelAndView reportUpload( @RequestParam Map<String, String> paramMap
-											    		 , HttpServletRequest request ) throws Exception{
+	@GetMapping(value = "reportUpload.do")
+    public ModelAndView reportUpload(@RequestParam Map<String, String> paramMap
+									 , HttpServletRequest request ) throws Exception{
         
-		ModelAndView model = new 	ModelAndView(Globals.JSONVIEW);
+		ModelAndView model = new 	ModelAndView(Globals.JSON_VIEW);
 		
 		try {
 			
+			if (!jwtVerification.isVerification(request)) {
+	    		ResultVO resultVO = new ResultVO();
+				return jwtVerification.handleAuthError(resultVO); // 토큰 확
+	    	}
 			
 			String filePath = propertiesService.getString("Globals.fileStorePath") ;   
-			
-			
             String imgData = paramMap.get("imgData");
             String reportPreview = paramMap.get("reportPreview")!= null ? paramMap.get("reportPreview") : "";
             String reportSeq = paramMap.get("reportSeq") != null ? paramMap.get("reportSeq") : "";
-            
             
             if (!reportPreview.equals("")){
             	//전 파일 삭제 
@@ -286,41 +295,40 @@ public class ReportPageInfoManageController {
 		                    
 		                
 		                if (reportService.updateReportPreviewInfoManage(vo) >  0){
-		                	 model.addObject("status", Globals.STATUS_SUCCESS);
+		                	 model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 		                	 model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.common.update"));
 		                }
 		            }
 	            }else {
-	            	model.addObject("status", Globals.STATUS_FAIL);
+	            	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 	            	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.update"));	
 	            }
             }else {
-            	model.addObject("status", Globals.STATUS_FAIL);
+            	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
             	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.update"));	
             }
             
         }catch (NullPointerException e) {
             // TODO Auto-generated catch block
-        	model.addObject("status", Globals.STATUS_FAIL);
+        	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
         	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.update"));	
-            LOGGER.error("reportUpload error:"  + e.toString());
+            log.error("reportUpload error:"  + e.toString());
         }  catch (Exception e) {
             // TODO Auto-generated catch block
-        	model.addObject("status", Globals.STATUS_FAIL);
+        	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
         	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.update"));	
-            LOGGER.error("reportUpload error:"  + e.toString());
+        	log.error("reportUpload error:"  + e.toString());
         } 
 		return model;
     }
 	
-	@RequestMapping(value = "reportCreateUpdate.do", method = RequestMethod.POST)
+	@GetMapping(value = "reportCreateUpdate.do")
     public ModelAndView reportCreateUpdate(HttpServletRequest request, 
-    		                                                    @RequestParam Map<String, String> paramMap) throws Exception{
+    		                                @RequestParam Map<String, String> paramMap) throws Exception{
         
-		ModelAndView model = new 	ModelAndView(Globals.JSONVIEW);
+		ModelAndView model = new 	ModelAndView(Globals.JSON_VIEW);
 		
 		try {
-			Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
 			
 			String imgData = paramMap.get("imgData");// request.getParameter("imgData");
 	        String reportTitle = paramMap.get("reportTitle") != null ? paramMap.get("reportTitle") : "";          
@@ -328,14 +336,13 @@ public class ReportPageInfoManageController {
 	        
             if (imgData.length() > 0){
             	 
-    	        if(!isAuthenticated) {
-    	    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-    	    		model.addObject("status", Globals.STATUS_LOGINFAIL);
-    	    		model.addObject("url", "/backoffice/login");
-    	    		return model;
-    	        }
+            	if (!jwtVerification.isVerification(request)) {
+    	    		ResultVO resultVO = new ResultVO();
+    				return jwtVerification.handleAuthError(resultVO); // 토큰 확
+    	    	}
+    			
     	        //추후 서비스로 이동
-    	        String filePath = propertiesService.getString("Globals.fileStorePath");
+    	       
     	        String atchFileId = egovFileIdGnrService.getNextStringId();
     	        
     	        imgData = imgData.replaceAll("data:image/jpeg;base64,", "");
@@ -345,12 +352,11 @@ public class ReportPageInfoManageController {
 	            
 	            ContentFileInfo vo = new ContentFileInfo();
 	            
-	            
-    	        try (OutputStream stream = new FileOutputStream(filePath+"/PreView/"+fileNm)) {
+	            try (OutputStream stream = new FileOutputStream(filePath+"/PreView/"+fileNm)) {
 	                stream.write(file);
 	                stream.close();
 	                vo.setAtchFileId(atchFileId);
-	                vo.setUserId(EgovUserDetailsHelper.getAuthenticatedUser().toString()); 
+	                vo.setUserId(jwtVerification.getTokenUserName(request)); 
      				vo.setFileStreCours(filePath+"/PreView/");
              		vo.setStreFileNm(fileNm);
              		vo.setOrignlFileNm(fileNm);
@@ -360,49 +366,37 @@ public class ReportPageInfoManageController {
              		//vo.setFileSize(fileSize(  file ));
                     vo.setFileOrder(Integer.toString( Integer.parseInt(atchFileId.replace("FILE_",""))));
                     
-                    
-                    LOGGER.error("ContentFileInfo:"  + vo.toString());
+                    log.error("ContentFileInfo:"  + vo.toString());
 
                     
 					conFileService.insertFileManage(vo);
-	               	model.addObject("status", Globals.STATUS_SUCCESS);
+	               	model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 	               	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.common.insert"));
 	            }catch(NullPointerException e1){
-	            	LOGGER.error("reportUpload error:"  + e1.toString());
-	             	model.addObject("status", Globals.STATUS_FAIL);
+	            	log.error("reportUpload error:"  + e1.toString());
+	             	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 	            	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.insert"));
 	            }catch(Exception e1){
-	            	LOGGER.error("reportUpload error:"  + e1.toString());
-	             	model.addObject("status", Globals.STATUS_FAIL);
+	            	log.error("reportUpload error:"  + e1.toString());
+	             	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 	            	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.insert"));
 	            }
             }else {
-            	model.addObject("status", Globals.STATUS_FAIL);
+            	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
             	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.insert"));	
             }
             
         } catch (NullPointerException e) {
             // TODO Auto-generated catch block
-        	model.addObject("status", Globals.STATUS_FAIL);
+        	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
         	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.insert"));	
-            LOGGER.error("reportUpload error:"  + e.toString());
+        	log.error("reportUpload error:"  + e.toString());
         } catch (Exception e) {
             // TODO Auto-generated catch block
-        	model.addObject("status", Globals.STATUS_FAIL);
+        	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
         	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.insert"));	
-            LOGGER.error("reportUpload error:"  + e.toString());
+        	log.error("reportUpload error:"  + e.toString());
         } 
 		return model;
-    }
-	public String fileSize(File f){
-		String fileSize = "";
-		if (f.exists()){
-			fileSize =  Long.toString(f.length());
-		}else {
-			fileSize = "0";
-		}
-		return fileSize;
-	}
-	
-	
+    }	
 }

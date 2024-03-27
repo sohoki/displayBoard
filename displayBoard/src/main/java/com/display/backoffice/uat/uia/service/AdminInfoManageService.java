@@ -29,8 +29,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 public  class AdminInfoManageService {
 
-	@Autowired
-	private AdminInfoManagerMapper adminMapper;
+	
+	private final AdminInfoManagerMapper adminMapper;
 	
 	
 	

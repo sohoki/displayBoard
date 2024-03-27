@@ -850,5 +850,9 @@ public class EgovDateUtil {
 
 		return _timeStr;
 	}
+	public static String timeInfo(String time_info){
+		
+	    return (time_info.length() == 1 ? "0" + time_info : time_info);
+	}
 
 }

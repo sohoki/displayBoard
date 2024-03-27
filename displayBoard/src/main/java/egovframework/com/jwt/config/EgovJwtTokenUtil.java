@@ -6,11 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
 import org.egovframe.rte.fdl.cmmn.exception.BaseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,11 +16,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import com.display.backoffice.util.service.RedisUtil;
-
+import com.display.backoffice.util.service.RedisUtilService;
 import egovframework.com.cmm.AdminLoginVO;
 import egovframework.com.cmm.LoginVO;
 import egovframework.com.exception.dto.ErrorCode;
-import egovframework.let.uat.uia.service.EgovLoginService;
 import egovframework.let.utl.fcc.service.EgovStringUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -36,11 +33,18 @@ import lombok.extern.slf4j.Slf4j;
 
 //security 관련 제외한 jwt util 클래스
 @RequiredArgsConstructor
-@Slf4j
 @Component
+@Slf4j
 public class EgovJwtTokenUtil implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+
 	private final RedisTemplate<String, String> redisTemplate;
+	
 	
 	private final RedisUtil redis;
 	
@@ -56,9 +60,10 @@ public class EgovJwtTokenUtil implements Serializable{
 	@Value("egovframe")
     private String secret;
 	
-	/** EgovLoginService */
+	/** EgovLoginService
 	@Resource(name = "loginService")
 	private EgovLoginService loginService;
+	 */
 	
 	public boolean isRefreshToken(String refreshKey) {
 		

@@ -10,6 +10,21 @@ spring:
   redis :
     host: localhost
     port: 6379
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+rabbitmq:
+  queue:
+    name: display.queue
+  exchange:
+    name: display.direct.exchange
+  routing:
+    key: ipcc.key
+  topic :
+    name : display_topic
+    key : display.manager.solved
 Globals:
   OsType : WINDOWS
   LocalIp : 127.0.0.1
@@ -39,3 +54,6 @@ token:
   expiration_time : 6000000
   refresh_time : 86400000 #24*60*60*1000
   secret : Q4NSl604sgyHJj1qwEkR3ycUeR4uUAt7WJraD7EN3O9DVM4yyYuHxMEbSF4XXyYJkal13eqgB0F7Bq4HQ4NSl604sgyHJj1qwEkR3ycUeR4uUAt7W
+page:
+  pageUnit : 10
+  pageSize : 10

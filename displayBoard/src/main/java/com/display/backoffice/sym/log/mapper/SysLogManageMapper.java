@@ -7,7 +7,7 @@ import com.display.backoffice.sym.log.vo.SysLog;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 
-@Mapper("SysLogManageMapper")
+@Mapper
 public interface SysLogManageMapper {
 
 	public List<Map<String, Object>> selectSysLogList(@Param("params") Map<String, Object> params);

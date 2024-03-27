@@ -21,6 +21,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,6 +51,13 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/backoffice/uat/uia/manager")
 public class AdminInfoManageController {
 
+    
+	
+	@Value("${page.pageUnit}")
+    private int pageUnitSetting ;
+    
+    @Value("${page.pageSize}")
+    private int pageSizeSetting ;
     
 	@Autowired
 	private AdminInfoManageService userManagerService;

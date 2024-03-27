@@ -1,17 +1,28 @@
 package egovframework.let.uat.uia.service.impl;
 
 import egovframework.com.cmm.AdminLoginVO;
-import egovframework.let.uat.uia.mapper.EgovLoginMapper;
+import egovframework.com.cmm.LoginVO;
+import egovframework.let.uat.uia.mapper.LoginManageMapper;
 import egovframework.let.uat.uia.models.dto.LoginReqDto;
 import egovframework.let.uat.uia.service.EgovLoginService;
 import egovframework.let.utl.fcc.service.EgovNumberUtil;
 import egovframework.let.utl.fcc.service.EgovStringUtil;
 import egovframework.let.utl.sim.service.EgovFileScrty;
+
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.display.backoffice.uat.uia.mapper.UserRoleInfoManageMapper;
+import com.display.backoffice.uat.uia.mapper.UserTokenMapper;
+import com.display.backoffice.uat.uia.models.UserToken;
 
 /**
  * 일반 로그인을 처리하는 비즈니스 구현 클래스
@@ -35,16 +46,17 @@ public class EgovLoginServiceImpl extends EgovAbstractServiceImpl implements Ego
 
 	
 	@Autowired
-	private EgovLoginMapper loginMapper;
-
+	private LoginManageMapper loginMapper;
+	
+	@Autowired
+	private UserTokenMapper tokenMapper;
+	
+	@Autowired 
+	private UserRoleInfoManageMapper userRoleMapper;
 	
 	
 	@Value("${token.refresh_time}")
 	private String TOKEN_REFRESH_TIME;
-	
-	
-	
-	
 	/**
 	 * 일반 로그인을 처리한다
 	 * @param vo LoginVO
@@ -60,9 +72,10 @@ public class EgovLoginServiceImpl extends EgovAbstractServiceImpl implements Ego
 
 		// 2. 아이디와 암호화된 비밀번호가 DB와 일치하는지 확인한다.
 		AdminLoginVO loginVO = loginMapper.actionLogin(vo);
-
 		// 3. 결과를 리턴한다.
 		if (loginVO != null && !loginVO.getAdminId().equals("") && !loginVO.getAdminPassword().equals("")) {
+			//추후 여기 부분을 system 권한 으로 변경 
+			loginVO.setRoleInfo(userRoleMapper.userRoleInfoSelectList(loginVO.getAdminId()));
 			return loginVO;
 		} else {
 			loginVO = new AdminLoginVO();
@@ -81,14 +94,7 @@ public class EgovLoginServiceImpl extends EgovAbstractServiceImpl implements Ego
 	public String searchId(LoginReqDto vo) throws Exception {
 
 		// 1. 이름, 이메일주소가 DB와 일치하는 사용자 ID를 조회한다.
-		String  adminId = loginMapper.searchId(vo);
-
-		// 2. 결과를 리턴한다.
-		if (adminId != null && !adminId.equals("")) {
-			return adminId;
-		} else {
-			return "";
-		}
+		return loginMapper.searchId(vo);
 	}
 
 	/**
@@ -97,16 +103,15 @@ public class EgovLoginServiceImpl extends EgovAbstractServiceImpl implements Ego
 	 * @return boolean
 	 * @exception Exception
 	 */
+	@Transactional
 	@Override
 	public boolean searchPassword(LoginReqDto vo) throws Exception {
 
 		boolean result = true;
 
 		// 1. 아이디, 이름, 이메일주소, 비밀번호 힌트, 비밀번호 정답이 DB와 일치하는 사용자 Password를 조회한다.
-		String  adminPassword = loginMapper.searchPassword(vo);
-		
-		
-		if ( adminPassword == null || adminPassword.equals("")) {
+		AdminLoginVO loginVO = loginMapper.searchPassword(vo);
+		if (loginVO == null || loginVO.getAdminPassword() == null || loginVO.getAdminPassword().equals("")) {
 			return false;
 		}
 
@@ -128,16 +133,53 @@ public class EgovLoginServiceImpl extends EgovAbstractServiceImpl implements Ego
 		pwVO.setAdminId(vo.getAdminId());
 		pwVO.setAdminPassword(enpassword);
 		
-		loginMapper.updatePassword(pwVO);
+		//메일 보내는 구문 넣어서 메일로 전송 
+		
+		//메일 보내는 구문 넣어서 메일로 전송
+		loginMapper.updatePassword(pwVO);// .updatePassword(pwVO);
 
 		return result;
 	}
-
+	@Transactional
 	@Override
-	public AdminLoginVO actionLoginSso(String adminId) throws Exception {
+	public int updateRefreshToken(String userId, String updateRefreshToken, String userName) throws Exception {
 		// TODO Auto-generated method stub
-		return loginMapper.actionLoginSso(adminId);
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
+		UserToken token = UserToken.builder()
+				.userId(userId)
+				.refreshToken(updateRefreshToken)
+				.expireat( dateFormat.format(new Date(System.currentTimeMillis() + Long.parseLong(TOKEN_REFRESH_TIME))))
+				.userName(userName)
+				.build();	  
+		return tokenMapper.updateTokenInfo(token);		
+	}
+	@Transactional
+	@Override
+	public int deleteRefreshToken(String userId) throws Exception {
+		// TODO Auto-generated method stub
+		return tokenMapper.deleteTokenInfo(userId);		
 	}
 
-	
+	@Override
+	public Optional<UserToken> selectTokenInfo(String refreshToken) throws Exception {
+		// TODO Auto-generated method stub
+		return tokenMapper.selectTokenInfo(refreshToken);
+	}
+
+	@Override
+	public AdminLoginVO actionLoginSso(String vo) throws Exception {
+		// TODO Auto-generated method stub
+		AdminLoginVO loginVO = loginMapper.actionLoginSso(vo);
+		// 3. 결과를 리턴한다.
+		if (loginVO != null && !loginVO.getAdminId().equals("")) {
+			
+			loginVO.setRoleInfo(userRoleMapper.userRoleInfoSelectList(loginVO.getAdminId()));
+			return loginVO;
+		} else {
+			loginVO = new AdminLoginVO();
+		}
+
+		return loginVO;
+	}
 }

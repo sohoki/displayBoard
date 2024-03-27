@@ -7,12 +7,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import egovframework.com.cmm.EgovComTraceHandler;
 import egovframework.com.cmm.EgovMessageSource;
@@ -25,6 +31,7 @@ import org.egovframe.rte.fdl.cmmn.trace.manager.DefaultTraceHandleManager;
 import org.egovframe.rte.fdl.cmmn.trace.manager.TraceHandlerService;
 import org.egovframe.rte.fdl.cryptography.EgovPasswordEncoder;
 import org.egovframe.rte.fdl.cryptography.impl.EgovARIACryptoServiceImpl;
+import org.egovframe.rte.fdl.excel.impl.EgovExcelServiceImpl;
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.DefaultPaginationManager;
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationRenderer;
 
@@ -46,7 +53,7 @@ import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationRenderer;
  *
  */
 @Configuration
-@ComponentScan(basePackages = "egovframework", includeFilters = {
+@ComponentScan(basePackages = "egovframework,com.display.backoffice", includeFilters = {
 	@ComponentScan.Filter(type = FilterType.ANNOTATION, value = Service.class),
 	@ComponentScan.Filter(type = FilterType.ANNOTATION, value = Repository.class)
 }, excludeFilters = {
@@ -191,4 +198,22 @@ public class EgovConfigAppCommon {
 		egovARIACryptoServiceImpl.setBlockSize(1024);
 		return egovARIACryptoServiceImpl;
 	}
+	
+    @Bean
+    @Primary
+    public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
+        ObjectMapper objectMapper = builder.createXmlMapper(false).build();
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        return objectMapper;
+    }
+	
+	@Bean(name="jsonView")
+    public MappingJackson2JsonView jsonView() {
+        return new MappingJackson2JsonView();
+    }
+	
+	@Bean(name="excelZipService")
+    public EgovExcelServiceImpl excelService() {
+        return new EgovExcelServiceImpl();
+    }
 }

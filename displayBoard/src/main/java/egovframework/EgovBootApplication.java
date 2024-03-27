@@ -21,7 +21,7 @@ public class EgovBootApplication {
 
 		SpringApplication springApplication = new SpringApplication(EgovBootApplication.class);
 		springApplication.setBannerMode(Banner.Mode.OFF);
-		springApplication.setLogStartupInfo(false);
+		//springApplication.setLogStartupInfo(false);
 		springApplication.run(args);
 
 		System.out.println("##### EgovBootApplication End #####");

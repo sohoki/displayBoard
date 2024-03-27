@@ -117,4 +117,6 @@ public class Globals {
 	public static final String JSON_RETURN_MESSAGEKEY = "MESSAGEINFO";
 	
 	public static final String STATUS_NTUNIQUE = "UNIQUE FAIL";
+	public static final String JSON_RESULT_REPORT = "reportInfo";
+	
 }

@@ -1,5 +1,8 @@
 package egovframework.let.uat.uia.service;
 
+import java.util.Optional;
+
+import com.display.backoffice.uat.uia.models.UserToken;
 import egovframework.com.cmm.AdminLoginVO;
 import egovframework.let.uat.uia.models.dto.LoginReqDto;
 
@@ -30,9 +33,9 @@ public interface EgovLoginService {
 	 * @exception Exception Exception
 	 */
 	public AdminLoginVO actionLogin(LoginReqDto vo) throws Exception;
-
 	
-	AdminLoginVO actionLoginSso (String adminId)throws Exception;
+	public AdminLoginVO actionLoginSso(String vo) throws Exception;
+
 	/**
 	 * 아이디를 찾는다.
 	 * @return LoginVO
@@ -50,5 +53,12 @@ public interface EgovLoginService {
 	 * @exception Exception Exception
 	 */
 	public boolean searchPassword(LoginReqDto vo) throws Exception;
+	
+	
+	public int updateRefreshToken(String userId, String updateRefreshToken, String userName) throws Exception;
+	
+	public int deleteRefreshToken(String userId) throws Exception;
+	
+	public Optional<UserToken> selectTokenInfo(String refreshToken) throws Exception;
 
 }

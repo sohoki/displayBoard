@@ -19,7 +19,12 @@
 		<typeAlias alias="ComDefaultCodeVO" type="egovframework.com.cmm.ComDefaultCodeVO" />
 		<typeAlias alias="comDefaultVO"		type="egovframework.com.cmm.ComDefaultVO" />
 		
+		<typeAlias alias="lmap" type="com.display.backoffice.util.service.LowerKeyMap"/>
+		<typeAlias alias="camelmap" type="com.display.backoffice.util.service.CamelKeyMap"/>
+		
 		<typeAlias alias="AdminLoginVO"		type="egovframework.com.cmm.AdminLoginVO" />
+		<typeAlias alias="LoginReqDto"		type="egovframework.let.uat.uia.models.dto.LoginReqDto" />
+		
 		
 		<typeAlias alias="UserAuthInfoDto"	type="com.display.backoffice.uat.uia.models.dto.UserAuthInfoDto" />
 		<typeAlias alias="AdminInfo"		type="com.display.backoffice.uat.uia.models.AdminInfo" />
@@ -29,13 +34,24 @@
 		<typeAlias alias="PartInfoVO"		type="com.display.backoffice.uat.uia.models.PartInfoVO" />
 		<typeAlias alias="UniUtilInfo"		type="com.display.backoffice.uat.uia.models.UniUtilInfo" />
 		
-		<typeAlias alias="CenterInfo"		type="com.display.backoffice.bas.cnt.models.CenterInfo" />
-		<typeAlias alias="CenterInfoVO"		type="com.display.backoffice.bas.cnt.models.CenterInfoVO" />
-		<!--  전문 관련 models -->
+		
+		
+		<!--  전문 관련 models 
 		<typeAlias alias="SendMsgInfoVO"		type="com.display.backoffice.sts.xml.models.SendMsgInfoVO" />
 		<typeAlias alias="SendMsgInfo"		type="com.display.backoffice.sts.xml.models.SendMsgInfo" />
 		<typeAlias alias="XmlInfo"		type="com.display.backoffice.sts.xml.models.XmlInfo" />
 		<typeAlias alias="XmlInfoVO"		type="com.display.backoffice.sts.xml.models.XmlInfoVO" />
+		
+		
+		
+		-->
+		<typeAlias alias="CenterInfo"		type="com.display.backoffice.bas.cnt.models.CenterInfo" />
+		<typeAlias alias="CenterInfoVO"		type="com.display.backoffice.bas.cnt.models.CenterInfoVO" />
+		
+		<package name="com.display.backoffice.uat.uia.models"/>	
+		<package name="com.display.backoffice.bas.cnt.models"/>	
+		<package name="com.display.backoffice.bas.cnt.models.dto"/>	
+		
 	</typeAliases>
     
 </configuration>

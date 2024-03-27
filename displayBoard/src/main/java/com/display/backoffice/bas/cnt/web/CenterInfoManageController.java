@@ -1,35 +1,43 @@
 package com.display.backoffice.bas.cnt.web;
 
 import com.display.backoffice.etc.rest.service.RestInfoManageService;
+import com.display.backoffice.sym.log.annotation.NoLogging;
 import com.display.backoffice.etc.rest.models.RestInfoVO;
 import com.display.backoffice.bas.cnt.service.CenterInfoService;
 import com.display.backoffice.bas.cnt.models.CenterInfoVO;
+import com.display.backoffice.bas.cnt.models.dto.CenterInfoReqDto;
 import com.display.backoffice.uat.uia.service.PartInfoManageService;
 import egovframework.com.cmm.EgovMessageSource;
 import egovframework.com.cmm.service.Globals;
 import egovframework.com.cmm.service.ResultVO;
 import egovframework.com.jwt.config.JwtVerification;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.egovframe.rte.fdl.property.EgovPropertyService;
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.servlet.ModelAndView;
 import com.display.backoffice.bas.code.service.EgovCcmCmmnDetailCodeManageService;
+import com.display.backoffice.util.service.UtilInfoService;
 import com.display.backoffice.util.service.fileService;
 
 
@@ -56,25 +64,21 @@ public class CenterInfoManageController {
 	@Autowired
 	protected EgovPropertyService propertiesService;
 
-	@Autowired
-	private PartInfoManageService partService;
+	
 
 	@Autowired
 	private CenterInfoService centerService;
 
-	@Autowired
-	private EgovCcmCmmnDetailCodeManageService detailService;
-	
 	/** JwtVerification */
 	@Autowired
 	private JwtVerification jwtVerification;
-
+	/*
 	@Autowired
 	private RestInfoManageService restService;
-
+	*/
 	fileService uploadFile = new fileService();
 
-	@ApiOperation(value="공통 상세 코드 조회", notes = "성공시 공통 상세 코드를 조회 합니다.")
+	@ApiOperation(value="지점 현황 조회", notes = "성공시 지점 현황을 조회 합니다.")
 	@PostMapping(value="centerList.do")
 	public ModelAndView selectCenterInfoManageListByPagination(@RequestBody Map<String, Object> searchMap, 
 																HttpServletRequest request, 
@@ -87,7 +91,10 @@ public class CenterInfoManageController {
         		ResultVO resultVO = new ResultVO();
     			return jwtVerification.handleAuthError(resultVO); // 토큰 확
         	}else {
-        		
+        		//여기 부분 수정 
+        		String[] userInfo = jwtVerification.getTokenUserInfo(request);
+        		searchMap.put("roleId", userInfo[2]);
+        		searchMap.put("partId", userInfo[3]);
         	}
 			
 			int pageUnit = searchMap.get(Globals.PAGE_UNIT) == null ?   pageUnitSetting : Integer.valueOf((String) searchMap.get(Globals.PAGE_UNIT));
@@ -118,24 +125,6 @@ public class CenterInfoManageController {
     		model.addObject(Globals.JSON_PAGEINFO, paginationInfo);
     		model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
     		
-    		
-    		
-			/*
-			 *
-			여기에 값 넣기 
-			 Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-		     if(!isAuthenticated) {
-		    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-		    		model.setViewName("/backoffice/login");
-		    		return model;
-		     }else{
-		    	 HttpSession httpSession = request.getSession(true);
-		    	 loginVO = (AdminLoginVO)httpSession.getAttribute("AdminLoginVO");
-			     searchVO.setAdminLevel(loginVO.getAdminLevel());
-			     searchVO.setPartId(loginVO.getPartId());
-		     }
-			*/
-			 centerService.selectCenterInfoPageInfoManageListByPagination(searchMap);
 			
 		}catch (NullPointerException e) {
 			log.error("ERROR:" + e.toString());
@@ -147,29 +136,73 @@ public class CenterInfoManageController {
 	@ApiOperation(value="지점  상세 조회", notes = "성공시 지점 정보를 상세 조회 합니다.")
 	@GetMapping(value="detail/{centerId}.do")
 	public ModelAndView selectCenterInfoManageDetail(@PathVariable String centerId, 
-													HttpServletRequest request, 
-													BindingResult bindingResult) throws Exception {
+													HttpServletRequest request) throws Exception {
 		
 		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
-		if (!jwtVerification.isVerification(request)) {
-    		ResultVO resultVO = new ResultVO();
-			return jwtVerification.handleAuthError(resultVO); // 토큰 확
-    	}
+		try {
+			if (!jwtVerification.isVerification(request)) {
+	    		ResultVO resultVO = new ResultVO();
+				return jwtVerification.handleAuthError(resultVO); // 토큰 확
+	    	}
+			Optional<CenterInfoVO> info = centerService.selectCenterInfoDetail(centerId);
+			if (info.isPresent()){
+				model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+				model.addObject(Globals.STATUS_REGINFO, info.get());
+			}else {
+				model.addObject(Globals.STATUS_MESSAGE, this.egovMessageSource.getMessage("fail.request.msg"));
+				model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+			}
+		}catch(Exception e) {
+			model.addObject(Globals.STATUS_MESSAGE, this.egovMessageSource.getMessage("fail.request.msg"));
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+		}
 		
-
-		model.addObject(Globals.STATUS_REGINFO, centerService.selectCenterInfoDetail(centerId));
-		model.addObject(Globals.STATUS_FLOORS , this.detailService.selectCmmnDetailCombo("CenterFloor"));
-		model.addObject(Globals.STATUS_FLOORE, this.detailService.selectCmmnDetailCombo("CenterFloor"));
-		model.addObject(Globals.STATUS_GROUP, this.partService.selectPartInfoCombo(null));
-
+		return model;
+	}
+	@ApiOperation(value="지점 사용 승인 ", notes = "성공시 지점 지점 사용 변경 합니다.")
+	@GetMapping(value="state/{centerId}.do")
+	public ModelAndView updateCenterStateChange(@PathVariable String centerId, 
+												@RequestParam Map<String, Object> commandMap,
+												HttpServletRequest request) throws Exception {
+		
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
+		try {
+			if (!jwtVerification.isVerification(request)) {
+	    		ResultVO resultVO = new ResultVO();
+				return jwtVerification.handleAuthError(resultVO); // 토큰 확
+	    	}else {
+	    		CenterInfoReqDto info = new CenterInfoReqDto();
+	    		info.setAdminApprovalYn(UtilInfoService.NVLObj(commandMap.get("adminApprovalYn"), "Y"));
+	    		info.setCenterId(centerId);
+	    		info.setUserId(jwtVerification.getTokenUserName(request));
+	    		int ret = centerService.updateCenterStateChange(info);
+				if (ret > 0) {
+		    		model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+		    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.request.msg"));
+		    	}
+		    	else {
+		    		model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+			    	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.msg"));
+		    	}
+	    	}
+		}catch (NullPointerException e) {
+			model.addObject(Globals.STATUS_MESSAGE, this.egovMessageSource.getMessage("fail.request.msg"));
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+		}catch (Exception e) {
+			model.addObject(Globals.STATUS_MESSAGE, this.egovMessageSource.getMessage("fail.request.msg"));
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+		}
+		
 		return model;
 	}
 
-	@ApiOperation(value="지점  상세 조회", notes = "성공시 지점 정보를 상세 조회 합니다.")
-	@GetMapping(value="Info/{centerId}.do")
-	public ModelAndView selectCenterInfo(@PathVariable String centerId, 
+	
+	@ApiOperation(value="지점 삭제", notes = "성공시 지점 정보를 삭제 합니다.")
+	@ApiImplicitParam(name = "centerId", value = "지점 코드")
+	@DeleteMapping(value="{centerId}.do")
+	public ModelAndView deleteCenterInfo(@PathVariable String centerId, 
 										HttpServletRequest request, 
-										  BindingResult bindingResult) throws Exception {
+										BindingResult bindingResult) throws Exception {
 		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 
 		try {
@@ -177,9 +210,15 @@ public class CenterInfoManageController {
 	    		ResultVO resultVO = new ResultVO();
 				return jwtVerification.handleAuthError(resultVO); // 토큰 확
 	    	}
-			
-			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
-			model.addObject(Globals.STATUS_REGINFO, this.centerService.selectCenterInfoDetail(centerId));
+			int ret = centerService.deleteCenterInfoManage(centerId);
+			if (ret > 0) {
+        		model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+        		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.common.delete"));
+        	}
+        	else {
+        		model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+    	    	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.delete"));
+        	}
 		} catch (NullPointerException e) {
 			model.addObject(Globals.STATUS_MESSAGE, this.egovMessageSource.getMessage("fail.request.msg"));
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
@@ -190,12 +229,12 @@ public class CenterInfoManageController {
 
 		return model;
 	}
-
+	@NoLogging
+	@ApiOperation(value="지점 업데이트", notes = "성공시 지점 업데이트 합니다.")
 	@PostMapping(value="centerUpdate.do")
-	public ModelAndView updateCenterInfoManage(HttpServletRequest request,
-										 MultipartRequest mRequest,
-										 @Valid @RequestBody CenterInfoVO vo,
-										 BindingResult result) throws Exception {
+	public ModelAndView updateCenterInfoManage(MultipartRequest mRequest,
+												CenterInfoReqDto info,
+												HttpServletRequest request) throws Exception {
 		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		
 		try {
@@ -203,19 +242,21 @@ public class CenterInfoManageController {
 	    		ResultVO resultVO = new ResultVO();
 				return jwtVerification.handleAuthError(resultVO); // 토큰 확
 	    	}else {
-	    		vo.setCenterUpdateId(jwtVerification.getTokenUserName(request));
+	    		info.setUserId(jwtVerification.getTokenUserName(request));
 	    	}
 			
 			
 			String meesage = "";
-			model.addObject(Globals.STATUS_REGINFO, vo);
-			vo.setCenterZipcode(String.valueOf(vo.getCenterZipcode1())+ vo.getCenterZipcode2());
-			vo.setCenterImg(this.uploadFile.uploadFileNm(mRequest.getFiles("centerImg"), filePath));
-			vo.setCenterSeatImg(this.uploadFile.uploadFileNm(mRequest.getFiles("centerSeatImg"), filePath));
-			int ret = this.centerService.updateCenterInfoManage(vo);
+			model.addObject(Globals.STATUS_REGINFO, info);
+			
+			String fileNm = uploadFile.uploadFileNm(mRequest.getFiles("centerImgFile"), propertiesService.getString("Globals.filePath"));
+			if (!fileNm.isEmpty())
+				info.setCenterImg(fileNm);
+			 
+			int ret = this.centerService.updateCenterInfoManage(info);
 			if (ret > 0) {
 				model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
-				meesage = vo.getMode().equals("Ins") ? "success.common.insert": "success.common.update";
+				meesage = info.getMode().equals("Ins") ? "success.common.insert": "success.common.update";
 				model.addObject(Globals.STATUS_MESSAGE,	this.egovMessageSource.getMessage(meesage));
 			} else {
 				throw new Exception();
@@ -233,7 +274,7 @@ public class CenterInfoManageController {
 		
 		return model;
 	}
-
+	/*
 	@PostMapping({ "restPageInfoUpdate.do" })
 	public ModelAndView updateRestInfo(@RequestBody RestInfoVO vo, 
 								 MultipartRequest mRequest,
@@ -277,4 +318,5 @@ public class CenterInfoManageController {
 		}
 		return model;
 	}
+	*/
 }

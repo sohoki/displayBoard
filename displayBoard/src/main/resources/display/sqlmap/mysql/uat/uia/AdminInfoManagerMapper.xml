@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.display.backoffice.uat.uia.mapper.AdminInfoManagerMapper">
 
-   <select id="selectAdminUserManageListByPagination" resultType="AdminInfoVO">     	      
+   <select id="selectAdminUserManageListByPagination" resultType="camelmap">     	      
 		SELECT SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT,
 			   TB.* FROM (
 			   SELECT

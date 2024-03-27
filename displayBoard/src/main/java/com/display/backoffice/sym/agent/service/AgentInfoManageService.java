@@ -269,23 +269,26 @@ public class AgentInfoManageService {
 		// TODO Auto-generated method stub
 		ModelAndView model = new ModelAndView();
 		try{
-			 PaginationInfo paginationInfo = new PaginationInfo();
-			 paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
-			 paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
-			 paginationInfo.setPageSize(searchVO.getPageSize());
+			PaginationInfo paginationInfo = new PaginationInfo();
+			paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
+			paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
+			paginationInfo.setPageSize(searchVO.getPageSize());
 
-			 searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
-			 searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
-			  //수정
-			 searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
-			  List<CenterInfoVO> centerLists =  centerMapper.selectCenterInfoManageListByPagination(searchVO);
-		      int i =0;
-		      for(CenterInfoVO center : centerLists ){
-		    	  List<AgentInfoVO> agentList = agentMapper.selectAgentNowStateInnfo(center.getCenterId().toString() );
-		    	  model.addObject("agentState"+i, agentList);
-		    	  i +=1;
-		      }
-			  model.addObject("centerInfo", centerLists); 
+			searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+			searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
+			 //수정
+			searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+			
+			
+			
+			List<CenterInfoVO> centerLists =  centerMapper.selectCenterInfoManageListByPagination(searchVO);
+		    int i =0;
+		    for(CenterInfoVO center : centerLists ){
+		   	  List<AgentInfoVO> agentList = agentMapper.selectAgentNowStateInnfo(center.getCenterId().toString() );
+		   	  model.addObject("agentState"+i, agentList);
+		   	  i +=1;
+		     }
+			model.addObject("centerInfo", centerLists); 
 		}catch(NullPointerException e){
 			log.error("selectAgentNowStateInnfo ERROR:" + e.toString());
 			throw e;

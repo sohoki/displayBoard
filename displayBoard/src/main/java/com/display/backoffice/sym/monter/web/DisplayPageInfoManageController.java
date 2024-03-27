@@ -567,44 +567,32 @@ public class DisplayPageInfoManageController {
 		return model;
 	}
 	//신규 작업
-	@RequestMapping (value="displayView.do")
-	public ModelAndView selecEqupInfoManageView(@ModelAttribute("loginVO") AdminLoginVO loginVO
-		                                          , @ModelAttribute("DispalyPageInfoVO")  DispalyPageInfoVO vo
+	@PostMapping (value="displayView.do")
+	public ModelAndView selecEqupInfoManageView(@RequestBody  DispalyPageInfoVO vo
 		                                          , HttpServletRequest request
 		                            			  , BindingResult bindingResult ) throws Exception{	
 		
 		
-		ModelAndView model = new ModelAndView("/backoffice/contentManage/displayView");
-		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		ModelAndView model = new 	ModelAndView(Globals.JSON_VIEW);
 		
 		
-		
-	    if(!isAuthenticated) {
-	    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-	    		model.setViewName("/backoffice/login");
-	    		return model;
-	    }else{
-	    	HttpSession httpSession = request.getSession(true);
-	   	 	loginVO = (AdminLoginVO)httpSession.getAttribute("AdminLoginVO");
-		    vo.setAdminLevel(loginVO.getAdminLevel());
-		    vo.setPartId(loginVO.getPartId());
-		    
-	    }
-		
+	    
 		try{
-			
+
+		    if (!jwtVerification.isVerification(request)) {
+	    		ResultVO resultVO = new ResultVO();
+				return jwtVerification.handleAuthError(resultVO); // 토큰 확
+	    	}else {
+	    		//여기 부분 수정 
+	    		String[] userInfo = jwtVerification.getTokenUserInfo(request);
+	    		vo.setAdminLevel(userInfo[2]);
+	    		vo.setPartId(userInfo[3]);
+				
+	    	}
 			DispalyPageInfoVO disInfo = displayService.selectDisplayPageInfoManageView(vo.getDisplaySeq()); 
-			model.addObject("regist", disInfo);
+			model.addObject(Globals.STATUS_REGINFO , disInfo);
 			
-			if ( disInfo.getDisplayGubun().equals("DispalyGubun_2")){
-				model.addObject("selectDisplayNextCombo", displayService.selectDisplayPageInfoCombo(vo));	
-			}
-		    
-		    //변경 구문 
-		    //추가 구문 넣기
-			model.addObject("selectDisplayCombo", cmmnDetailService.selectCmmnDetailCombo("DispalyGubun"));
-		    model.addObject("selectState", authorInfoManageService.selectAuthorIInfoManageCombo());		
-			model.addObject("selectGroup", partService.selectPartInfoCombo());
+			
 			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 		}catch(NullPointerException e){
 			log.debug("selecEqupInfoManageView :" + e.toString());
@@ -617,28 +605,29 @@ public class DisplayPageInfoManageController {
 		}
 		return model;
 	}
-	@RequestMapping (value="ajaxDisplayView.do")
-	public ModelAndView selectajaxDisplayView(@ModelAttribute("loginVO") AdminLoginVO loginVO
-													             , @RequestParam Map<String, Object> reportMap
-													             , HttpServletRequest request
-																 , BindingResult bindingResult ) throws Exception{	
+	@GetMapping (value="ajaxDisplayView.do")
+	public ModelAndView selectajaxDisplayView(@RequestParam Map<String, Object> reportMap
+												, HttpServletRequest request
+												, BindingResult bindingResult ) throws Exception{	
 
 
 			ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
-			Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
 			ReportPageInfoVO searchVO = new ReportPageInfoVO();
 			
 			
-			if(!isAuthenticated) {
-				model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-				model.addObject(Globals.STATUS, Globals.STATUS_LOGINFAIL);
-				return model;
-			}else{
-				HttpSession httpSession = request.getSession(true);
-				loginVO = (AdminLoginVO)httpSession.getAttribute("AdminLoginVO");
-				searchVO.setAdminLevel(loginVO.getAdminLevel());
-				searchVO.setPartId(loginVO.getPartId());
-			}
+			
+			if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}else {
+        		//여기 부분 수정 
+        		String[] userInfo = jwtVerification.getTokenUserInfo(request);
+        		searchVO.setAdminLevel(userInfo[2]);
+				searchVO.setPartId(userInfo[3]);
+				
+        	}
+			
+			
 			//여기 부분 수정 
 			searchVO.setPageIndex( Integer.valueOf(  reportMap.get("pageIndex").toString() ) );
 			searchVO.setReportUseYn("Y");
@@ -648,8 +637,7 @@ public class DisplayPageInfoManageController {
 			}
             String displayGubun = reportMap.get("displayGubun") != null ? request.getParameter("displayGubun") : ""; 
 			
-            model = reportService.selectReportPageInfoManageListByPaginationAjax(searchVO, displayGubun);
-			model.setViewName(Globals.JSON_VIEW);
+            //model = reportService.selectReportPageInfoManageListByPaginationAjax(searchVO, displayGubun);
 			
             return model;
 	}

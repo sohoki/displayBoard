@@ -2,56 +2,49 @@ package com.display.backoffice.sts.sch.web;
 
 import java.util.List;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-
-
-
 import org.springframework.web.servlet.ModelAndView;
-
 import com.display.backoffice.sts.sch.service.ContentScheduleManagerService;
-import com.display.backoffice.sym.ccm.cde.service.EgovCcmCmmnDetailCodeManageService;
-import com.display.backoffice.sym.monter.models.DispalyPageInfoVO;
 import com.display.backoffice.sym.monter.service.DisplayPageInfoManageService;
-import com.display.backoffice.uat.service.PartInfoManageService;
-import com.display.backoffice.uat.models.UniUtilInfo;
-import com.display.backoffice.uat.service.UniUtilManageService;
-import com.display.backoffice.util.web.service.DataNullCheck;
-
+import com.display.backoffice.uat.uia.models.UniUtilInfo;
+import com.display.backoffice.util.service.UtilInfoService;
+import com.display.backoffice.uat.uia.service.UniUtilManageService;
 import egovframework.com.cmm.AdminLoginVO;
 import egovframework.com.cmm.EgovMessageSource;
 import egovframework.com.cmm.service.Globals;
-import org.egovframe.rte.fdl.idgnr.EgovIdGnrService;
+import egovframework.com.cmm.service.ResultVO;
+import egovframework.com.jwt.config.JwtVerification;
+import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
 import org.egovframe.rte.fdl.property.EgovPropertyService;
-import org.egovframe.rte.fdl.security.userdetails.util.EgovUserDetailsHelper;
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
 import com.display.backoffice.sts.sch.service.AgentGroupInfoManagerService;
 import com.display.backoffice.sts.sch.models.AgentGroupInfoVO;
 import com.display.backoffice.sts.sch.models.ContentScheduleInfo;
 import com.display.backoffice.sts.sch.models.ContentScheduleInfoVO;
-import com.display.backoffice.sts.xml.models.SendMsgInfoVO;
 
+@Api(tags = {"콘텐츠 스케줄 관리 API"})
+@Slf4j
 @RestController
-@RequestMapping("/backoffice/contentManage")
+@RequestMapping("/api/backoffice/contentManage/contentSchedule")
 public class ContentScheduleManagerController {
 	
-	
-    private static final Logger LOGGER = LoggerFactory.getLogger(ContentScheduleManagerController.class);
-	
-   
+	@Value("${page.pageUnit}")
+    private int pageUnitSetting ;
+    
+    @Value("${page.pageSize}")
+    private int pageSizeSetting ;
+    
+    
+    
     
     @Autowired
 	protected EgovMessageSource egovMessageSource;
@@ -60,17 +53,7 @@ public class ContentScheduleManagerController {
     protected EgovPropertyService propertiesService;
 	
 	@Autowired
-	private EgovCcmCmmnDetailCodeManageService cmmnDetailService;
-	
-	@Autowired
 	private ContentScheduleManagerService contSchedule;
-	
-	@Autowired
-	private UniUtilManageService utilService;
-	
-	@Autowired
-	private PartInfoManageService partService;
-	
 	
 	@Autowired
     protected DisplayPageInfoManageService displayService;	
@@ -78,138 +61,134 @@ public class ContentScheduleManagerController {
 	@Autowired
     protected AgentGroupInfoManagerService agentGroup;
 	
-	@RequestMapping(value="conSchInfoList.do")
-	public ModelAndView selectConSchInfoListInfo(@ModelAttribute("loginVO") AdminLoginVO loginVO
-				                                 , @ModelAttribute("ContentScheduleInfoVO") ContentScheduleInfoVO searchVO
-				                                 , HttpServletRequest request
-	                                			 , BindingResult bindingResult) throws Exception{
+	@Autowired
+	private UniUtilManageService utilService;
+	
+	
+	/** JwtVerification */
+	@Autowired
+	private JwtVerification jwtVerification;
+	
+	@PostMapping(value="conSchInfoList.do")
+	public ModelAndView selectConSchInfoListInfo(@RequestBody ContentScheduleInfoVO searchVO
+				                                 , HttpServletRequest request) throws Exception{
 		
-		ModelAndView model = new ModelAndView();
-		DispalyPageInfoVO vo = new DispalyPageInfoVO();
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		
 		try{
-			Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
 			
-			if(!isAuthenticated) {
-	    	    model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-	    	    model.setViewName("/backoffice/login");
-	    		return model;
-		    }else{
-		    	HttpSession httpSession = request.getSession(true);
-		   	 	loginVO = (AdminLoginVO)httpSession.getAttribute("AdminLoginVO");
-			    vo.setAdminLevel(loginVO.getAdminLevel());
-			    vo.setPartId(loginVO.getPartId());
-			    vo.setDisplayGubun("DispalyGubun_2");
-		    }
-			if(  searchVO.getPageUnit() > 0  ){    	   
-		    	   searchVO.setPageUnit(searchVO.getPageUnit());
-			}else {
-				   searchVO.setPageUnit(propertiesService.getInt("pageUnit"));   
-			}
+			if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}else {
+        		//여기 부분 수정 
+        		String[] userInfo = jwtVerification.getTokenUserInfo(request);
+        		searchVO.setAdminLevel(userInfo[2]);
+        		searchVO.setPartId(userInfo[2]);
+        		searchVO.setDisplayGubun("DispalyGubun_2");
+        	}
 			
-		    searchVO.setPageSize(propertiesService.getInt("pageSize"));
-			searchVO.setPartId(loginVO.getPartId());
-			searchVO.setAdminLevel(loginVO.getAdminLevel());
-            
-			searchVO.setPageIndex(DataNullCheck.IntNullCheck( searchVO.getPageIndex() , 1 ));
 			
+			searchVO.setPageUnit(UtilInfoService.NVL(searchVO.getPageUnit(), pageUnitSetting) );
+			searchVO.setPageSize(UtilInfoService.NVL(searchVO.getPageSize(), pageSizeSetting) );
+			searchVO.setPageIndex(UtilInfoService.NVL(searchVO.getPageIndex(), 1) );
+	    	
+			PaginationInfo paginationInfo = new PaginationInfo();
+			paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
+			paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
+			paginationInfo.setPageSize(searchVO.getPageSize());
+			searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+			searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
+			searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+			
+			List<ContentScheduleInfoVO> conschList = contSchedule.selectContentSchduleInfoManageListByPagination(searchVO); 
+			model.addObject(Globals.JSON_RETURN_RESULT_LIST,   conschList);
+		    
+		    int totCnt =  conschList.size() > 0 ? conschList.get(0).getTotalRecordCount() : 0;       
+			paginationInfo.setTotalRecordCount(totCnt);
+		    model.addObject(Globals.PAGE_INFO, paginationInfo);
+		    model.addObject(Globals.PAGE_TOTAL_COUNT, totCnt);
+		    model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+		    model.addObject(Globals.STATUS_REGINFO, searchVO);
 		    //부서, 전광판화면, 콘텐츠 구분 
 			
-			model = contSchedule.selectContentSchduleInfoManageListByPagination(searchVO);
-			model.addObject("regist", searchVO);
-			model.addObject("selectGroupCombo", partService.selectPartInfoCombo());
-			model.addObject("selectDisplayCombo", displayService.selectDisplayPageInfoCombo(vo));
-			model.addObject("selectConsch", cmmnDetailService.selectCmmnDetailCodeList("CONSCH_GUBUN") );
-			model.setViewName("/backoffice/contentManage/conSchduleList");
-			
-			
-		    
 		}catch (NullPointerException e){
-			LOGGER.error("selectContentSchList ERROR: "  + e.toString());
+			log.error("selectContentSchList ERROR: "  + e.toString());
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 		}catch (Exception e){
-			LOGGER.error("selectContentSchList ERROR: "  + e.toString());
+			log.error("selectContentSchList ERROR: "  + e.toString());
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 		}
 	    return model;
 	}
 	
-	@RequestMapping(value="conPopSchView.do")
-	public ModelAndView selectContentSchList(@ModelAttribute("loginVO") AdminLoginVO loginVO
-																, @ModelAttribute("ContentScheduleInfoVO") ContentScheduleInfoVO searchVO
-																, HttpServletRequest request
-																, BindingResult bindingResult		) throws Exception {
+	@PostMapping(value="conPopSchView.do")
+	public ModelAndView selectContentSchList(@RequestBody ContentScheduleInfoVO searchVO
+											, HttpServletRequest request) throws Exception {
 		
-		ModelAndView model = new ModelAndView();
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		try{
-			Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-		    if(!isAuthenticated) {
-		    	    model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-		    	    model.setViewName("/backoffice/login");
-		    		return model;
-		    }
+			
+		    if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}
 		    
 		   
 		    String displaySeq = request.getParameter("displaySeq") != null ? request.getParameter("displaySeq") : "";	
 		    if (!displaySeq.equals(""))
 		    	searchVO.setDisplaySeq(displaySeq);
-		    model = contSchedule.selectContentSchduleInfoManageListByPagination(searchVO);
+		    model.addObject(Globals.JSON_RETURN_RESULT_LIST, contSchedule.selectContentSchduleInfoManageListByPagination(searchVO));
+		    model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+		    
 		    
 		}catch (NullPointerException e){
-			LOGGER.error("selectContentSchList ERROR: "  + e.toString());
+			log.error("selectContentSchList ERROR: "  + e.toString());
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));
 			model.addObject(Globals.STATUS,  Globals.STATUS_FAIL);
 		}catch (Exception e){
-			LOGGER.error("selectContentSchList ERROR: "  + e.toString());
+			log.error("selectContentSchList ERROR: "  + e.toString());
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));
 			model.addObject(Globals.STATUS,  Globals.STATUS_FAIL);
 		}
-		model.setViewName("/backoffice/popup/conPopSchView");
 	    return model;
 	}
-	@RequestMapping(value="conSchInfoView.do")
-	public ModelAndView selectConSchInfoView(@ModelAttribute("loginVO") AdminLoginVO loginVO
-			                                 , @RequestBody ContentScheduleInfo vo
-			                                 , HttpServletRequest request
-                                			 , BindingResult bindingResult) throws Exception{
+	@PostMapping(value="conSchInfoView.do")
+	public ModelAndView selectConSchInfoView(@RequestBody ContentScheduleInfo vo
+			                                 , HttpServletRequest request) throws Exception{
 		
-		ModelAndView model = new 	ModelAndView(Globals.JSONVIEW);
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
+		
 		try{
-			 Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-		     if(!isAuthenticated) {
-		    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-		    		model.addObject(Globals.STATUS, Globals.STATUS_LOGINFAIL);
-		    		return model;
-		     }
-			 model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
-			 model.addObject("conSchInfo", contSchedule.selectConetntSchduleInfoManageView(vo.getConschCode()));
+			if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}
+			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+			model.addObject("conSchInfo", contSchedule.selectConetntSchduleInfoManageView(vo.getConschCode()));
 		}catch(NullPointerException e){
-			LOGGER.debug("selectConSchInfoView error:" + e.toString());
+			log.debug("selectConSchInfoView error:" + e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
-			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.update"));		
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.msg"));		
 		}catch(Exception e){
-			LOGGER.debug("selectConSchInfoView error:" + e.toString());
+			log.debug("selectConSchInfoView error:" + e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
-			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.update"));		
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.msg"));		
 		}
 		return model;
 	}
-	@RequestMapping (value="scheduleReset.do")		
-	public ModelAndView scheduleReset(@ModelAttribute("loginVO") AdminLoginVO loginVO
-											            , @RequestBody AgentGroupInfoVO vo
-											            , HttpServletRequest request                         				 
-														, BindingResult result) throws Exception{
+	@PostMapping (value="scheduleReset.do")		
+	public ModelAndView scheduleReset(@RequestBody AgentGroupInfoVO vo
+									 , HttpServletRequest request) throws Exception{
 		
-		ModelAndView model = new ModelAndView(Globals.JSONVIEW);
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		try{
-			Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-			if(!isAuthenticated) {
-		    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-		    		model.addObject(Globals.STATUS,  Globals.STATUS_LOGINFAIL);
-		    		return model;
-		    }
+			if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}
 			int ret = agentGroup.updateAgentResetUpdateContent(vo.getConschCode());
 			
 			if (ret > 0){
@@ -220,72 +199,71 @@ public class ContentScheduleManagerController {
 				model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.content"));	
 			}
 		}catch(NullPointerException e){
-			LOGGER.debug("selectGroupInfoList error:" + e.toString());
+			log.debug("selectGroupInfoList error:" + e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));	
 		} catch(Exception e){
-			LOGGER.debug("selectGroupInfoList error:" + e.toString());
+			log.debug("selectGroupInfoList error:" + e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));	
 		} 	
 		return model;
-		
 	}
 	
-	@RequestMapping ("agentContentList.do")
-	public ModelAndView selectagentContentList(@ModelAttribute("AdminLoginVO") AdminLoginVO loginVO
-											, @RequestBody AgentGroupInfoVO searchVO
-											, HttpServletRequest request
-											, BindingResult bindingResult) throws Exception {
-		
-		ModelAndView model = new ModelAndView(Globals.JSONVIEW);
+	@PostMapping ("agentContentList.do")
+	public ModelAndView selectagentContentList(@RequestBody AgentGroupInfoVO searchVO
+											, HttpServletRequest request) throws Exception {
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		  //공용 확인 하기 
         
         try{
-      	  Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-  	      if(!isAuthenticated) {
-	  	    	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-	    		model.addObject(Globals.STATUS, Globals.STATUS_LOGINFAIL);
-  	    		return model;
-  	      }
-  		   
-  		  searchVO.setPageUnit(propertiesService.getInt("pageUnit")); 
-  		  searchVO.setPageSize(propertiesService.getInt("pageSize"));
+        	if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}
+        	searchVO.setPageUnit(UtilInfoService.NVL(searchVO.getPageUnit(), pageUnitSetting) );
+			searchVO.setPageSize(UtilInfoService.NVL(searchVO.getPageSize(), pageSizeSetting) );
+			
   	           
-  	   	  PaginationInfo paginationInfo = new PaginationInfo();
-  		  paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
-  		  paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
-  		  paginationInfo.setPageSize(searchVO.getPageSize());
+  	   		PaginationInfo paginationInfo = new PaginationInfo();
+  	   		paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
+  	   		paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
+  	   		paginationInfo.setPageSize(searchVO.getPageSize());
 
-  		  searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
-  		  searchVO.setLastIndex(paginationInfo.getFirstRecordIndex() + searchVO.getPageSize());
-  		  searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+  	   		searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+  	   		searchVO.setLastIndex(paginationInfo.getFirstRecordIndex() + searchVO.getPageSize());
+  	   		searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
 
-  		  List<AgentGroupInfoVO> list = agentGroup.selectAgentContentListInfo(searchVO);
-  	      model.addObject("contentList", list);
-  	      int totCnt = list.size() > 0 ? list.get(0).getTotalRecordCount() : 0;
+  	   		List<AgentGroupInfoVO> list = agentGroup.selectAgentContentListInfo(searchVO);
+  	   		
+  	   		int totCnt = list.size() > 0 ? list.get(0).getTotalRecordCount() : 0;
   	      
-  		  paginationInfo.setTotalRecordCount(totCnt);
-  	      model.addObject("totalCnt", totCnt);
-  	      model.addObject("paginationInfo", paginationInfo);
-  	      model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+  	   		paginationInfo.setTotalRecordCount(totCnt);
+  	   		model.addObject(Globals.JSON_RETURN_RESULT_LIST, list);
+  	   		model.addObject(Globals.PAGE_TOTAL_COUNT, totCnt);
+  	   		model.addObject(Globals.PAGE_INFO, paginationInfo);
+  	   		model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
   	      
         }catch(NullPointerException e){
-      	  LOGGER.debug("selectagentContentList error: " + e.toString());
+        	log.debug("selectagentContentList error: " + e.toString());
+        	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));
         }catch(Exception e){
-        	  LOGGER.debug("selectagentContentList error: " + e.toString());
-          }
+        	log.debug("selectagentContentList error: " + e.toString());
+        	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));
+        }
 	      
 	    return model;
 		
 	}
 	
 	@RequestMapping (value="conSchDeleteInfo.do")
-	public ModelAndView deleteSchInfoManage(@ModelAttribute("loginVO") AdminLoginVO loginVO
-			                               , @RequestBody ContentScheduleInfo vo) throws Exception{
+	public ModelAndView deleteSchInfoManage(@RequestBody ContentScheduleInfo vo
+											, HttpServletRequest request) throws Exception{
 		
 		
-        ModelAndView model = new 	ModelAndView(Globals.JSONVIEW);
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		
 		
 		UniUtilInfo utilInfo = new UniUtilInfo();
@@ -293,20 +271,17 @@ public class ContentScheduleManagerController {
 		utilInfo.setInCondition("CONSCH_CODE=["+vo.getConschCode()+"[");
 		try{
 			
-			Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-		    if(!isAuthenticated) {
-		    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-		    		model.addObject(Globals.STATUS, Globals.STATUS_LOGINFAIL);
-		    		return model;
+			if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}
+			int ret = 	utilService.deleteUniStatement(utilInfo);	
+		    if (ret > 0 ) {		    	  
+		    	model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.common.delete"));
+		    	model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+		    }else {
+		    	throw new Exception();		    	  
 		    }
-		
-		      int ret = 	utilService.deleteUniStatement(utilInfo);	
-		      if (ret > 0 ) {		    	  
-		    	  model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.common.delete"));
-		    	  model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
-		      }else {
-		    	  throw new Exception();		    	  
-		      }
 		}catch (NullPointerException e){
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.delete"));
 	    	model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
@@ -316,62 +291,70 @@ public class ContentScheduleManagerController {
 		}
 		return model;
 	}
-	@RequestMapping (value="agentGroupInfo.do")		
-	public ModelAndView selectGroupInfoList(@ModelAttribute("loginVO") AdminLoginVO loginVO
-				                                             , @RequestBody AgentGroupInfoVO searchVO
-					                                         , HttpServletRequest request                         				 
-															 , BindingResult result) throws Exception{
-		ModelAndView model = new ModelAndView(Globals.JSONVIEW);
+	@PostMapping (value="agentGroupInfo.do")		
+	public ModelAndView selectGroupInfoList(@RequestBody AgentGroupInfoVO searchVO
+					                        , HttpServletRequest request) throws Exception{
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		try{
-			Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-			if(!isAuthenticated) {
-		    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-		    		model.addObject(Globals.STATUS, Globals.STATUS_LOGINFAIL);
-		    		return model;
-		    }else {
-		    	 HttpSession httpSession = request.getSession(true);
-		    	 loginVO = (AdminLoginVO)httpSession.getAttribute("AdminLoginVO");
-		    	 searchVO.setAdminLevel(loginVO.getAdminLevel());
-		    	 searchVO.setPartId(loginVO.getPartId());
-		    }
-		    //좌측 에이전트 
-			model = agentGroup.selectAgentGroupInfoListByPagination(searchVO);
+			if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}else {
+        		//여기 부분 수정 
+        		String[] userInfo = jwtVerification.getTokenUserInfo(request);
+        		searchVO.setAdminLevel(userInfo[2]);
+        		searchVO.setPartId(userInfo[2]);
+        	}
+			searchVO.setPageUnit(UtilInfoService.NVL(searchVO.getPageUnit(), pageUnitSetting) );
+			searchVO.setPageSize(UtilInfoService.NVL(searchVO.getPageSize(), pageSizeSetting) );
+			
+			PaginationInfo paginationInfo = new PaginationInfo();
+			paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
+			paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
+			paginationInfo.setPageSize(searchVO.getPageSize());
+			searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+			searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
+			searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+			
+			List<AgentGroupInfoVO> leftAgentGroup = agentGroup.selectAgentGroupInfoListByPagination(searchVO);
+			
+		    int totCnt =  leftAgentGroup.size() > 0 ? leftAgentGroup.get(0).getTotalRecordCount() : 0;  
+			paginationInfo.setTotalRecordCount(totCnt);
+		    model.addObject(Globals.PAGE_INFO, paginationInfo);
+		    model.addObject(Globals.JSON_RETURN_RESULT_LIST,   leftAgentGroup);
+		    leftAgentGroup = null;
+			model.addObject("resultRight",   agentGroup.selectAgentGroupInfoRightListByPagination(searchVO));
 			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 		}catch(NullPointerException e){
-			LOGGER.debug("selectGroupInfoList error:" + e.toString());
+			log.debug("selectGroupInfoList error:" + e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));	
 		} catch(Exception e){
-			LOGGER.debug("selectGroupInfoList error:" + e.toString());
+			log.debug("selectGroupInfoList error:" + e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));	
 		} 	
 		return model;
 	}
 	
-	@RequestMapping (value="agentUpdateInfo.do")		
-	public ModelAndView agentUpdateInfo(@ModelAttribute("loginVO") AdminLoginVO loginVO
-							            , @RequestBody AgentGroupInfoVO searchVO
-							            , HttpServletRequest request                         				 
-										, BindingResult result) throws Exception{
+	@PostMapping (value="agentUpdateInfo.do")		
+	public ModelAndView agentUpdateInfo(@RequestBody AgentGroupInfoVO searchVO
+							            , HttpServletRequest request) throws Exception{
 		
-		ModelAndView model = new ModelAndView(Globals.JSONVIEW);
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		try{
-			Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-			if(!isAuthenticated) {
-		    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-		    		model.addObject(Globals.STATUS, Globals.STATUS_LOGINFAIL);
-		    		return model;
-		    }else {
-		    	 HttpSession httpSession = request.getSession(true);
-		    	 loginVO = (AdminLoginVO)httpSession.getAttribute("AdminLoginVO");
-		    	 searchVO.setAdminLevel(loginVO.getAdminLevel());
-		    	 searchVO.setPartId(loginVO.getPartId());
-		    }
+			if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}else {
+        		//여기 부분 수정 
+        		String[] userInfo = jwtVerification.getTokenUserInfo(request);
+        		searchVO.setAdminLevel(userInfo[2]);
+        		searchVO.setPartId(userInfo[2]);
+        	}
 			
 			String returnTxt  = agentGroup.changedeleteAgentGroupInfo(searchVO);
-			LOGGER.debug("returnTxt:" + returnTxt);
-			model = agentGroup.selectAgentGroupInfoListByPagination(searchVO);
+			log.debug("returnTxt:" + returnTxt);
 			
 			if (!returnTxt.equals(Globals.STATUS_FAIL) &&  !returnTxt.equals(Globals.STATUS_UNIQUE)){
 				model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
@@ -381,11 +364,11 @@ public class ContentScheduleManagerController {
 				model.addObject(Globals.STATUS_MESSAGE,  egovMessageSource.getMessage(message));	
 			}
 		}catch(NullPointerException e){
-			LOGGER.debug("selectGroupInfoList error:" + e.toString());
+			log.debug("selectGroupInfoList error:" + e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));	
 		}catch(Exception e){
-			LOGGER.debug("selectGroupInfoList error:" + e.toString());
+			log.debug("selectGroupInfoList error:" + e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));	
 		}  	
@@ -393,24 +376,26 @@ public class ContentScheduleManagerController {
 		
 	}
 	
-    @RequestMapping (value="conSchInfoUpdate.do")
+    @PostMapping (value="conSchInfoUpdate.do")
 	public ModelAndView updateContentSchUpdateInfoManage( @ModelAttribute("loginVO") AdminLoginVO loginVO
                                                          , @RequestBody ContentScheduleInfo vo
 				                                         , HttpServletRequest request                         				 
 														 , BindingResult result) throws Exception{
     	
-    	ModelAndView model = new ModelAndView(Globals.JSONVIEW);
+    	ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
     	model.addObject("regist", vo);
     	try{
-    		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
-		    if(!isAuthenticated) {
-		    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.login"));
-		    		model.addObject(Globals.STATUS, Globals.STATUS_LOGINFAIL);
-		    		return model;
-		    }
+    		if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}else {
+        		//여기 부분 수정 
+        		String[] userInfo = jwtVerification.getTokenUserInfo(request);
+        		vo.setUserId(userInfo[0]);
+        		
+        	}
 			AdminLoginVO user = (AdminLoginVO) request.getSession().getAttribute("AdminLoginVO");	
-			/** 파일 업로드 확인 하기 **/
-            vo.setUserId(user.getAdminId());
+			
 			String meesage = vo.getMode().equals("Ins") ? "sucess.common.insert" : "sucess.common.update";
 			int ret = contSchedule.updateContentSchduleInfoManage(vo);
 			if (ret > 0){
@@ -420,12 +405,12 @@ public class ContentScheduleManagerController {
 				throw new Exception();
 			}
     	}catch (NullPointerException e){
-    		LOGGER.debug("updateequpInfoManage error:" + e.toString());
+    		log.debug("updateequpInfoManage error:" + e.toString());
     		String meesage = vo.getMode().equals("Ins") ? "fail.common.insert" : "fail.common.update";
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage(meesage));		
     	}catch (Exception e){
-    		LOGGER.debug("updateequpInfoManage error:" + e.toString());
+    		log.debug("updateequpInfoManage error:" + e.toString());
     		String meesage = vo.getMode().equals("Ins") ? "fail.common.insert" : "fail.common.update";
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage(meesage));		

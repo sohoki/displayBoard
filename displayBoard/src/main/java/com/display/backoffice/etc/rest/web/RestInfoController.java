@@ -7,9 +7,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.BindingResult;
@@ -20,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
-
 import com.display.backoffice.bas.cnt.service.CenterInfoService;
 import com.display.backoffice.bas.code.service.EgovCcmCmmnDetailCodeManageService;
 import com.display.backoffice.etc.rest.models.RestInfo;
@@ -30,10 +26,10 @@ import com.display.backoffice.etc.rest.models.RestNoticeInfoVO;
 
 import com.display.backoffice.etc.rest.service.RestInfoManageService;
 import com.display.backoffice.etc.rest.service.RestNoticeInfoManageService;
-
+/*
 import com.display.backoffice.sts.cnt.web.FileUpladController;
 import com.display.backoffice.sym.monter.web.DisplayPageInfoManageController;
-
+*/
 import egovframework.com.cmm.AdminLoginVO;
 import egovframework.com.cmm.EgovMessageSource;
 import egovframework.com.cmm.service.Globals;
@@ -70,7 +66,7 @@ public class RestInfoController {
 	private JwtVerification jwtVerification;
 	
 	
-	@Resource(name = "RestInfoManageService")
+	@Autowired
 	private RestInfoManageService restService;
 	
 	
@@ -82,11 +78,11 @@ public class RestInfoController {
 	@Autowired
 	private CenterInfoService centerService;
 	
-	@Resource(name="RestNoticeInfoManageService")
+	@Autowired
 	private RestNoticeInfoManageService restNoticeService;
 	
 	
-    FileUpladController uploadFile = new FileUpladController();
+    //FileUpladController uploadFile = new FileUpladController();
 	
     
     @PostMapping(value="restNoticeList.do")

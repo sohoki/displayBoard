@@ -149,7 +149,6 @@ public class JwtVerification {
 				verificationFlag =  false;
 				return verificationFlag;
 			}
-			
 		} catch (IllegalArgumentException e) {
 			log.debug("Unable to get refresh Token");
 		} catch (ExpiredJwtException e) {
@@ -168,6 +167,12 @@ public class JwtVerification {
 		String jwtToken = EgovStringUtil.isNullToString(request.getHeader("authorization").replace("Bearer", ""));
 		String[] tokenS = jwtTokenUtil.getUsernameFromToken(jwtToken).split("\\|");
 		return tokenS[1];
+	}
+	//사용자 정보 전체 가지고 오기
+	public String[] getTokenUserInfo(HttpServletRequest request) {
+		// step 1. request header에서 토큰을 가져온다.
+		String jwtToken = EgovStringUtil.isNullToString(request.getHeader("authorization").replace("Bearer", ""));
+		return jwtTokenUtil.getUsernameFromToken(jwtToken).split("\\|");
 	}
 	public ModelAndView handleAuthError(ResultVO resultVO) {
 		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);

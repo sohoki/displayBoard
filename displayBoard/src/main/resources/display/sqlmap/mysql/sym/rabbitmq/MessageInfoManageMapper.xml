@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.sym.rabbitmq.mapper.MessageInfoManageMapper">
+
+	<insert id="receiveMessageInfo">
+		INSERT INTO TB_MESSAGEHISTORY(MESSAGE_SYSTEMCODE, MESSAGE_PROCESS_NAME, MESSAGE_PROCESS_GUBUN, ID)
+		VALUES (#{messageSystemcode}, #{messageprocessName}, #{messageprocessGubun} , #{id} )
+	</insert>
+</mapper>

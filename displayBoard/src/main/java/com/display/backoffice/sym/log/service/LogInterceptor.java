@@ -14,9 +14,9 @@ import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import egovframework.com.cmm.AdminLoginVO;
-import org.egovframe.rte.fdl.security.userdetails.util.EgovUserDetailsHelper;
 import com.display.backoffice.sym.log.vo.SysLog;
 
 //@Intercepts({@Signature(type=StatementHandler.class, method="update", args={Statement.class})})
@@ -28,7 +28,7 @@ import com.display.backoffice.sym.log.vo.SysLog;
 public class LogInterceptor implements Interceptor{
 
 	
-	@Resource(name="EgovSysLogService")
+	@Autowired
 	private EgovSysLogService sysLogService;
 	
 	
@@ -140,6 +140,7 @@ public class LogInterceptor implements Interceptor{
 		
 		String uniqId = "";
 		String ip = "";
+		/*
 		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
 		if(isAuthenticated.booleanValue()) {
 			AdminLoginVO user = (AdminLoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
@@ -147,7 +148,7 @@ public class LogInterceptor implements Interceptor{
 			ip = user.getIp();
 			
     	}
-		
+		*/
 		SysLog sysLog = new SysLog();
 		
 		sysLog.setSrvcNm(queryID);

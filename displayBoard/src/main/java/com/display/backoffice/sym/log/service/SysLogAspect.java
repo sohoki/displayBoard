@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.annotation.Resource;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -13,12 +12,10 @@ import org.aspectj.lang.annotation.Aspect;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 import org.springframework.web.servlet.ModelAndView;
-
-import egovframework.com.cmm.AdminLoginVO;
-import org.egovframe.rte.fdl.security.userdetails.util.EgovUserDetailsHelper;
 import org.egovframe.rte.fdl.cmmn.exception.manager.AbstractExceptionHandleManager;
 import org.egovframe.rte.fdl.cmmn.exception.manager.ExceptionHandlerService;
 import com.display.backoffice.sym.log.vo.SysLog;
@@ -27,7 +24,7 @@ import com.display.backoffice.sym.log.vo.SysLog;
 @Component
 public class SysLogAspect   extends AbstractExceptionHandleManager implements ExceptionHandlerService {
 	
-	@Resource(name="EgovSysLogService")
+	@Autowired
 	private EgovSysLogService sysLogService;
  
 	private static final Logger LOGGER = LoggerFactory.getLogger(SysLogAspect.class);
@@ -136,12 +133,14 @@ public class SysLogAspect   extends AbstractExceptionHandleManager implements Ex
 			String uniqId = "";
 			String ip = "";
 			String taskCount = Integer.toString(stopWatch.getTaskCount());
+			/*
 	        Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();	        
 	    	if(isAuthenticated.booleanValue()) {
 	    		AdminLoginVO user = (AdminLoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
 				uniqId = user.getAdminId();// .getUniqId();
 				ip = user.getIp() == null ? "": user.getIp();
 	    	}
+	    	*/
 			sysLog.setSrvcNm(className);
 			sysLog.setMethodNm(methodName);
 			sysLog.setProcessSeCode(processSeCode);
@@ -197,14 +196,14 @@ public class SysLogAspect   extends AbstractExceptionHandleManager implements Ex
 			String uniqId = "";
 			String ip = "";
  
-	    	/* Authenticated  */
+	    	/* Authenticated 
 			Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();	        
 	    	if(isAuthenticated.booleanValue()) {
 	    		AdminLoginVO user = (AdminLoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
 				uniqId = user.getAdminId();// .getUniqId();
 				ip = user.getIp();
 	    	}
- 
+ 			 */
 			sysLog.setSrvcNm(className);
 			sysLog.setMethodNm(methodName);
 			sysLog.setProcessSeCode(processSeCode);
@@ -303,7 +302,7 @@ public class SysLogAspect   extends AbstractExceptionHandleManager implements Ex
 			String ip = "";
 			String taskCount = Integer.toString(stopWatch.getTaskCount());
  
-	    	/* Authenticated  */
+	    	/* Authenticated 
 	        Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
 	        //LOGGER.debug("isAuthenticated:" + isAuthenticated);
 	        
@@ -313,7 +312,7 @@ public class SysLogAspect   extends AbstractExceptionHandleManager implements Ex
 				ip = user.getIp();
 	    	}
 	    	//ip = EgovClntInfo.getClntIP(request);
- 
+ 			*/
 			sysLog.setSrvcNm(className);
 			sysLog.setMethodNm(methodName);
 			sysLog.setProcessSeCode(processSeCode);

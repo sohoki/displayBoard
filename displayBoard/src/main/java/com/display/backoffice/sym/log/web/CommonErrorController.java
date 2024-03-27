@@ -2,30 +2,17 @@ package com.display.backoffice.sym.log.web;
 
 import java.io.IOException;
 
-import javax.annotation.Resource;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.NoHandlerFoundException;
-import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
-
 import com.display.backoffice.sym.log.service.EgovSysLogService;
 import com.display.backoffice.sym.log.vo.SysLog;
-import egovframework.com.cmm.AdminLoginVO;
-import org.egovframe.rte.fdl.security.userdetails.util.EgovUserDetailsHelper;
-
 
 @RestController
 @RequestMapping("/cmm/error")
@@ -33,8 +20,8 @@ public class CommonErrorController extends HttpServlet  {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CommonErrorController.class);
 	
-	@Resource(name="EgovSysLogService")
-	private EgovSysLogService sysLogService;
+	@Autowired
+	protected EgovSysLogService sysLogService;
 	
 	
 	
@@ -103,13 +90,14 @@ public class CommonErrorController extends HttpServlet  {
 				
 	    	 String uniqId = "";
 	    	 String ip = "";
+	    	 /*
 	         Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();	        
 	        if(isAuthenticated.booleanValue()) {
 	        		AdminLoginVO user = (AdminLoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
 	    			uniqId = user.getAdminId();// .getUniqId();
 	    			ip = user.getIp() == null ? "": user.getIp();
 	         }
-	        
+	         */
 	         sysLog.setErrorCode( request.getAttribute("javax.servlet.error.status_code").toString() );
 			 sysLog.setSrvcNm(request.getAttribute("javax.servlet.error.servlet_name").toString());
 	    	 sysLog.setMethodNm(request.getAttribute("javax.servlet.error.request_uri").toString());

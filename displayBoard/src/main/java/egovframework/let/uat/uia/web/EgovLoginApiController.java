@@ -56,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EgovLoginApiController {
 
 	/** EgovLoginService */
-	@Resource(name = "loginService")
+	@Autowired
 	private EgovLoginService loginService;
 
 	/** EgovMessageSource */

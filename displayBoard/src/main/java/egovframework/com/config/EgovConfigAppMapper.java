@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +41,7 @@ import org.springframework.jdbc.support.lob.DefaultLobHandler;
 @PropertySources({
 	@PropertySource("classpath:/application.yml")
 })
+@MapperScan(value="com.display.backoffice.**.mapper, egovframework.**.mapper",sqlSessionFactoryRef="sqlSession")
 public class EgovConfigAppMapper {
 	
 	
@@ -69,7 +71,7 @@ public class EgovConfigAppMapper {
 			
 			List<String> mapperLocations = new ArrayList<>();
 			mapperLocations.add("classpath:/egovframework/mapper/let/**/*_" + dbType + ".xml");
-			//mapperLocations.add("classpath:/mapper/"+ dbType + "/backoffice/**/*.xml");
+			mapperLocations.add("classpath:/display/sqlmap/"+ dbType + "/**/*.xml");
 			
 			for (String mapperLocation : mapperLocations) {
 				sqlSessionFactoryBean.setMapperLocations(
