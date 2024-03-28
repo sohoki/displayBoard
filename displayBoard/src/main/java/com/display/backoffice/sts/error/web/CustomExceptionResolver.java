@@ -17,13 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import egovframework.com.cmm.AdminLoginVO;
-import org.egovframe.rte.fdl.security.userdetails.util.EgovUserDetailsHelper;
 import com.display.backoffice.sym.log.service.EgovSysLogService;
 import com.display.backoffice.sym.log.vo.SysLog;
 
 public class CustomExceptionResolver extends SimpleMappingExceptionResolver {
 
-private static final Logger LOGGER = LoggerFactory.getLogger(CustomExceptionResolver.class);	 
+	private static final Logger LOGGER = LoggerFactory.getLogger(CustomExceptionResolver.class);	 
 	
 	private Integer defaultStatusCode;
 
@@ -53,64 +52,65 @@ private static final Logger LOGGER = LoggerFactory.getLogger(CustomExceptionReso
 	 protected ModelAndView doResolveException( HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
 
 			 // Log exception, both at debug log level and at warn level, if desired.
-		     SysLog sysLog = new SysLog();
-		     //StringWriter sw = new StringWriter(); 
-		     //ex.printStackTrace(new PrintWriter(sw)); 
+		    SysLog sysLog = new SysLog();
+		    //StringWriter sw = new StringWriter(); 
+		    //ex.printStackTrace(new PrintWriter(sw)); 
 
-		     
-		     //sysLog.setMethodResult(sw.toString());
-			 if (LOGGER.isDebugEnabled()) {
-				 LOGGER.debug("ajax 에러 인지 체크: " + request.getHeader("AJAX"));
-				 LOGGER.debug("customer Resolving exception from handler [" + handler + "]: " + ex);
-			 }
-			 String processSeCode =  "E";
-	    	 String className = handler.toString().substring( handler.toString().indexOf("ModelAndView") + 13, handler.toString().indexOf("("));
-	    	 String methodName = className.substring(className.lastIndexOf(".") + 1, className.length());
-	    	 String processTime = "0";
-	    	 String uniqId = "";
-	    	 String ip = "";
-	         Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();	        
+		    
+		    //sysLog.setMethodResult(sw.toString());
+			if (LOGGER.isDebugEnabled()) {
+			 LOGGER.debug("ajax 에러 인지 체크: " + request.getHeader("AJAX"));
+			 LOGGER.debug("customer Resolving exception from handler [" + handler + "]: " + ex);
+			}
+			String processSeCode =  "E";
+	    	String className = handler.toString().substring( handler.toString().indexOf("ModelAndView") + 13, handler.toString().indexOf("("));
+	    	String methodName = className.substring(className.lastIndexOf(".") + 1, className.length());
+	    	String processTime = "0";
+	    	String uniqId = "";
+	    	String ip = "";
+	    	 /*
+	        Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();	        
 	        if(isAuthenticated.booleanValue()) {
 	        		AdminLoginVO user = (AdminLoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
 	    			uniqId = user.getAdminId();// .getUniqId();
 	    			ip = user.getIp() == null ? "": user.getIp();
 	         }
+	        */
 	        
-	        
-			 sysLog.setSrvcNm(className);
-	    	 sysLog.setMethodNm(methodName);
-	    	 sysLog.setProcessSeCode(processSeCode);
-	    	 sysLog.setProcessTime(processTime);
-	    	 sysLog.setRqesterId(uniqId);
-	    	 sysLog.setRqesterIp(ip);
-	    	 
-	    	 sysLog.setSqlParam(ex.toString());
+			sysLog.setSrvcNm(className);
+	    	sysLog.setMethodNm(methodName);
+	    	sysLog.setProcessSeCode(processSeCode);
+	    	sysLog.setProcessTime(processTime);
+	    	sysLog.setRqesterId(uniqId);
+	    	sysLog.setRqesterIp(ip);
 	    	
-			 String viewName = super.determineViewName(ex, request);
-			 
-			 
-			 if (viewName != null) {
-			      
-				  Integer statusCode = super.determineStatusCode(request, viewName);
-				  //statusCode 확인 하기 
-				  if (statusCode != null) {
-				      super.applyStatusCodeIfPossible(request, response, statusCode.intValue());
-				  }
-				  sysLog.setErrorCode(String.valueOf( statusCode.intValue()));
-				  try {
-		    			sysLogService.logInsertSysLog(sysLog);
-		    	  }catch (IOException e) {
-		    		  LOGGER.debug("syslog error:" + e.toString());	
-		    	  }catch (Exception e) {
-		    		  LOGGER.debug("syslog error:" + e.toString());	
-		    	  }
-				  
-				  return getModelAndView(viewName, ex, request);
-			 }
-			 else {
-				 LOGGER.debug("NULL로 확인");
-			     return null;
-			 }
+	    	sysLog.setSqlParam(ex.toString());
+	    	
+			String viewName = super.determineViewName(ex, request);
+			
+			
+			if (viewName != null) {
+			     
+			  Integer statusCode = super.determineStatusCode(request, viewName);
+			  //statusCode 확인 하기 
+			  if (statusCode != null) {
+			      super.applyStatusCodeIfPossible(request, response, statusCode.intValue());
+			  }
+			  sysLog.setErrorCode(String.valueOf( statusCode.intValue()));
+			  try {
+		   			sysLogService.logInsertSysLog(sysLog);
+		   	  }catch (IOException e) {
+		   		  LOGGER.debug("syslog error:" + e.toString());	
+		   	  }catch (Exception e) {
+		   		  LOGGER.debug("syslog error:" + e.toString());	
+		   	  }
+			  
+			  return getModelAndView(viewName, ex, request);
+			}
+			else {
+			 LOGGER.debug("NULL로 확인");
+			    return null;
+			}
 	 }
 	 
 	@Override

@@ -1,6 +1,7 @@
 package com.display.backoffice.sym.agent.service;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -273,15 +274,17 @@ public class AgentInfoManageService {
 			paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
 			paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
 			paginationInfo.setPageSize(searchVO.getPageSize());
-
+			/*
 			searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
 			searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
-			 //수정
+			
 			searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+			*/
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("firstIndex", paginationInfo.getFirstRecordIndex());
+			params.put("recordCountPerPage", paginationInfo.getRecordCountPerPage());
 			
-			
-			
-			List<CenterInfoVO> centerLists =  centerMapper.selectCenterInfoManageListByPagination(searchVO);
+			List<CenterInfoVO> centerLists =  centerMapper.selectCenterInfoManageListByPagination(params);
 		    int i =0;
 		    for(CenterInfoVO center : centerLists ){
 		   	  List<AgentInfoVO> agentList = agentMapper.selectAgentNowStateInnfo(center.getCenterId().toString() );

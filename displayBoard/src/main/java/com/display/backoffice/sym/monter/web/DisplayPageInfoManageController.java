@@ -610,35 +610,63 @@ public class DisplayPageInfoManageController {
 												, HttpServletRequest request
 												, BindingResult bindingResult ) throws Exception{	
 
-
 			ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 			ReportPageInfoVO searchVO = new ReportPageInfoVO();
 			
-			
-			
-			if (!jwtVerification.isVerification(request)) {
-        		ResultVO resultVO = new ResultVO();
-    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
-        	}else {
-        		//여기 부분 수정 
-        		String[] userInfo = jwtVerification.getTokenUserInfo(request);
-        		searchVO.setAdminLevel(userInfo[2]);
-				searchVO.setPartId(userInfo[3]);
-				
-        	}
-			
-			
-			//여기 부분 수정 
-			searchVO.setPageIndex( Integer.valueOf(  reportMap.get("pageIndex").toString() ) );
-			searchVO.setReportUseYn("Y");
-			if (!reportMap.get("searchKeyword").equals("") ){
-				searchVO.setSearchCondition(reportMap.get("searchCondition").toString());
-				searchVO.setSearchKeyword(reportMap.get("searchKeyword").toString());
-			}
-            String displayGubun = reportMap.get("displayGubun") != null ? request.getParameter("displayGubun") : ""; 
-			
-            //model = reportService.selectReportPageInfoManageListByPaginationAjax(searchVO, displayGubun);
-			
+            try{
+            	
+            	
+            	if (!jwtVerification.isVerification(request)) {
+            		ResultVO resultVO = new ResultVO();
+        			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+            	}else {
+            		//여기 부분 수정 
+            		String[] userInfo = jwtVerification.getTokenUserInfo(request);
+            		searchVO.setAdminLevel(userInfo[2]);
+    				searchVO.setPartId(userInfo[3]);
+    				
+            	}
+    			
+    			
+    			//여기 부분 수정 
+    			searchVO.setPageIndex( Integer.valueOf(  reportMap.get("pageIndex").toString() ) );
+    			searchVO.setReportUseYn("Y");
+    			if (!reportMap.get("searchKeyword").equals("") ){
+    				searchVO.setSearchCondition(reportMap.get("searchCondition").toString());
+    				searchVO.setSearchKeyword(reportMap.get("searchKeyword").toString());
+    			}
+                String displayGubun = reportMap.get("displayGubun") != null ? request.getParameter("displayGubun") : ""; 
+                
+    			PaginationInfo paginationInfo = new PaginationInfo();
+    			paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
+    			paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
+    			paginationInfo.setPageSize(searchVO.getPageSize());
+    			
+    			
+    			searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+    			searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
+    			searchVO.setReplacePath(propertiesService.getString("Globals.fileStorePathReplace") );
+    			
+    			searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+    			
+    			if (displayGubun.equals("DispalyGubun_2")){
+    				List<String> agentCode =  Arrays.asList("reportGubun_3,reportGubun_4".split("\\s*,\\s*"));;
+    				searchVO.setSearchReportGubun(agentCode);
+    			}
+    			List<ReportPageInfoVO> disList = reportService.selectReportPageInfoManageListByPaginationAjax(searchVO, displayGubun);
+    			model.addObject("resultList", disList);
+    			int totCnt = disList.size() > 0 ? disList.get(0).getTotalRecordCount() : 0  ;
+    			paginationInfo.setTotalRecordCount(totCnt);
+    			model.addObject("totalCnt", totCnt);
+    			model.addObject("paginationInfo", paginationInfo);
+    			
+    			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+    		}catch(Exception e){
+    			log.error("selectReportPageInfoManageListByPaginationAjax ERROR:" + e.toString() );
+    			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+    			//Utils.getPrintStackTrace(e);
+    			throw e;
+    		}
             return model;
 	}
 	//여기 구문 찾기 

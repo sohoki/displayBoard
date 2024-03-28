@@ -12,8 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor	
 public class CenterInfoVO extends CenterInfo implements Serializable {
 
-    
-private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 	
 	/** 검색조건 */
     private String searchCondition = "";    
@@ -36,7 +35,7 @@ private static final long serialVersionUID = 1L;
     private String centerFloorEndTxt;
     private String centerAgentCnt;
     private String totalRecordCount;
-    
+    private String adminLevel;
     
     
 }

@@ -1,18 +1,12 @@
 package com.display.backoffice.sts.report.service;
 
-import java.util.Arrays;
 import java.util.List;
-
 import javax.annotation.Resource;
-
 import com.display.backoffice.sts.report.mapper.ReportPageInfoManageMapper;
 import com.display.backoffice.sts.report.models.ReportPageInfo;
 import com.display.backoffice.sts.report.models.ReportPageInfoVO;
-
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.egovframe.rte.fdl.idgnr.EgovIdGnrService;
 import org.springframework.stereotype.Service;
 
@@ -35,41 +29,9 @@ public class ReportPageInfoManageService {
 		
 	}
 	
-	public ModelAndView selectReportPageInfoManageListByPaginationAjax( ReportPageInfoVO searchVO, String displayGubun) throws Exception {
-		ModelAndView model = new ModelAndView();
-		try{
-			PaginationInfo paginationInfo = new PaginationInfo();
-			paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
-			paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
-			paginationInfo.setPageSize(searchVO.getPageSize());
-			
-			
-			searchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
-			searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
-			searchVO.setReplacePath(propertiesService.getString("Globals.fileStorePathReplace") );
-			
-			searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
-			
-			if (displayGubun.equals("DispalyGubun_2")){
-				List<String> agentCode =  Arrays.asList("reportGubun_3,reportGubun_4".split("\\s*,\\s*"));;
-				searchVO.setSearchReportGubun(agentCode);
-			}
-			List<ReportPageInfoVO> disList = reportMapper.selectReportPageInfoManageListByPagination(searchVO);
-			model.addObject("resultList", disList);
-			int totCnt = disList.size() > 0 ? disList.get(0).getTotalRecordCount() : 0  ;
-			paginationInfo.setTotalRecordCount(totCnt);
-			model.addObject("totalCnt", totCnt);
-			model.addObject("paginationInfo", paginationInfo);
-			
-			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
-		}catch(Exception e){
-			LOGGER.error("selectReportPageInfoManageListByPaginationAjax ERROR:" + e.toString() );
-			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
-			//Utils.getPrintStackTrace(e);
-			throw e;
-		}
-		
-		return model;
+	public List<ReportPageInfoVO> selectReportPageInfoManageListByPaginationAjax(ReportPageInfoVO searchVO, 
+																				String displayGubun) throws Exception {
+		return reportMapper.selectReportPageInfoManageListByPagination(searchVO);
 	}
 	
 	
