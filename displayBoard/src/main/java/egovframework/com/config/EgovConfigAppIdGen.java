@@ -1817,5 +1817,58 @@ public class EgovConfigAppIdGen {
 			.setFillChar('0')
 			.build();
 	}
+	
+	/**  장비정보 ID Generation  Config
+	 * @return
+	 */
+	@Bean(destroyMethod = "destroy")
+	public EgovTableIdGnrServiceImpl egovEqupIdGnrService() {
+		EgovTableIdGnrServiceImpl egovTableIdGnrServiceImpl = new EgovTableIdGnrServiceImpl();
+		egovTableIdGnrServiceImpl.setDataSource(dataSource);
+		egovTableIdGnrServiceImpl.setStrategy(equpStrategy());
+		egovTableIdGnrServiceImpl.setBlockSize(10);
+		egovTableIdGnrServiceImpl.setTable("IDS");
+		egovTableIdGnrServiceImpl.setTableName("SCHDULE_CODE");
+		return egovTableIdGnrServiceImpl;
+	}
+	
+	
+	/**
+	 * 에이전트 ID Generation  Strategy Config
+	 * @return
+	 */
+	private EgovIdGnrStrategyImpl equpStrategy() {
+		EgovIdGnrStrategyImpl egovIdGnrStrategyImpl = new EgovIdGnrStrategyImpl();
+		egovIdGnrStrategyImpl.setPrefix("Agnt_");
+		egovIdGnrStrategyImpl.setCipers(10);
+		egovIdGnrStrategyImpl.setFillChar('0');
+		return egovIdGnrStrategyImpl;
+	}
+	
+	/**  장비정보 ID Generation  Config
+	 * @return
+	 */
+	@Bean(destroyMethod = "destroy")
+	public EgovTableIdGnrServiceImpl egovSchIdGnrService() {
+		EgovTableIdGnrServiceImpl egovTableIdGnrServiceImpl = new EgovTableIdGnrServiceImpl();
+		egovTableIdGnrServiceImpl.setDataSource(dataSource);
+		egovTableIdGnrServiceImpl.setStrategy(schStrategy());
+		egovTableIdGnrServiceImpl.setBlockSize(10);
+		egovTableIdGnrServiceImpl.setTable("IDS");
+		egovTableIdGnrServiceImpl.setTableName("AGENT_CODE");
+		return egovTableIdGnrServiceImpl;
+	}
+	
+	/**
+	 * 에이전트 ID Generation  Strategy Config
+	 * @return
+	 */
+	private EgovIdGnrStrategyImpl schStrategy() {
+		EgovIdGnrStrategyImpl egovIdGnrStrategyImpl = new EgovIdGnrStrategyImpl();
+		egovIdGnrStrategyImpl.setPrefix("Sch_");
+		egovIdGnrStrategyImpl.setCipers(11);
+		egovIdGnrStrategyImpl.setFillChar('0');
+		return egovIdGnrStrategyImpl;
+	}
 
 }

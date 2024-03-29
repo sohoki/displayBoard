@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-@Service
+@Service("UniUtilManageService")
 public class UniUtilManageService {
 
 	

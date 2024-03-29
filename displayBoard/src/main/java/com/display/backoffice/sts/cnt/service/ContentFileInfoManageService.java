@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-@Service
+@Service("ContentFileInfoManageService")
 public class ContentFileInfoManageService {
 
 	private final ContentFileManagerMapper conFileManager;
