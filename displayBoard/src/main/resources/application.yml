@@ -8,13 +8,16 @@ spring:
   profiles: 
     active: dev 
   redis :
-    host: localhost
-    port: 6379
+    host: 59.14.245.89
+    port: 30004
+    password : Rowa230927!@
+    #6379
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: 59.14.245.89
+    port: 30003
+    username: admin
+    password: Rowa230927!@
+    #5672
 rabbitmq:
   queue:
     name: display.queue
