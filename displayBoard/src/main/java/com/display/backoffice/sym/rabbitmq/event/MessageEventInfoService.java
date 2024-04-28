@@ -164,41 +164,37 @@ public class MessageEventInfoService {
 			log.info("receiveMessageUpdate display Received result: {}", object.toString() + ":" + messageDto.getProcessName());
 			//log.info("rec json result :" + object.get(Globals.JSON_RETURN_RESULT));
 			switch (messageDto.getProcessName()) {
-				case "MANAGER" : 
-						if (!messageDto.getProcessGubun().equals("DELETE")) {
-							AdminInfoVO vo = new AdminInfoVO();
-							String mode = messageDto.getProcessGubun().equals("INSERT") ? "Ins" : "Edt";
-							vo.setMode(mode);
-							JSONObject userInfo = (JSONObject) object.get(Globals.JSON_RETURN_RESULT);
-							vo.setAdminId(userInfo.get("adminId").toString());
-							vo.setAdminPassword(userInfo.get("adminPassword").toString());
-							vo.setAdminName(userInfo.get("adminName").toString());
-							vo.setAdminEmail(userInfo.get("adminEmail").toString());
-							vo.setUseYn(userInfo.get("useYn").toString());
-							vo.setPartId(userInfo.get("partId").toString());
-							vo.setInsttCode(userInfo.get("insttCode").toString());
-							vo.setAdminTel(userInfo.get("adminTel").toString());
-							vo.setUserId("IPCC");
-							vo.setEmpNo(UtilInfoService.NVLObj(userInfo.get("empNo"), ""));
-							vo.setAdminStatus(UtilInfoService.NVLObj(userInfo.get("adminStatus"), ""));
-							vo.setPbxExtension(UtilInfoService.NVLObj(userInfo.get("pbxExtension"), ""));
-							vo.setConsultantUseyn(UtilInfoService.NVLObj(userInfo.get("consultantUseyn"), ""));
-							vo.setSystemcodeUsecode(UtilInfoService.NVLObj(userInfo.get("systemcodeUsecode"), ""));
-							JSONArray subobjs = (JSONArray) userInfo.get("authInfo");
-							/*
-							subobjs.forEach(item -> {
-							    JSONObject obj = (JSONObject) item;
-							    if (obj.get("systemCode").equals("DISP" )) {
-							    	vo.setRoleId(UtilInfoService.NVLObj(obj.get("roleId"), ""));
-							    }	
-							});
-							*/
-							
-							
-							ret = userManagerService.updateAdminUserManage(vo);
-						}else {
-							ret = userManagerService.deleteAdminUserManage(messageDto.getId());
-						}
+				case "MANAGER" :
+					if (messageDto.getProcessGubun().equals(Globals.SAVE_MODE_LIST) && object.get(Globals.JSON_RETURN_RESULT) != null) {
+						ObjectMapper mapper = new ObjectMapper();
+						List<CmmnClCodeResDto> lcodeList = Arrays.asList(mapper.readValue(object.get(Globals.JSON_RETURN_RESULT).toString(), CmmnClCodeResDto[].class));
+						
+						
+					}else if (!messageDto.getProcessGubun().equals(Globals.SAVE_MODE_DELETE) && object.get(Globals.JSON_RETURN_RESULT) != null) {
+						AdminInfoVO vo = new AdminInfoVO();
+						String mode = messageDto.getProcessGubun().equals("INSERT") ? "Ins" : "Edt";
+						vo.setMode(mode);
+						JSONObject userInfo = (JSONObject) object.get(Globals.JSON_RETURN_RESULT);
+						vo.setAdminId(userInfo.get("adminId").toString());
+						vo.setAdminPassword(userInfo.get("adminPassword").toString());
+						vo.setAdminName(userInfo.get("adminName").toString());
+						vo.setAdminEmail(userInfo.get("adminEmail").toString());
+						vo.setUseYn(userInfo.get("useYn").toString());
+						vo.setPartId(userInfo.get("partId").toString());
+						vo.setInsttCode(userInfo.get("insttCode").toString());
+						vo.setAdminTel(userInfo.get("adminTel").toString());
+						vo.setUserId("IPCC");
+						vo.setEmpNo(UtilInfoService.NVLObj(userInfo.get("empNo"), ""));
+						vo.setAdminStatus(UtilInfoService.NVLObj(userInfo.get("adminStatus"), ""));
+						vo.setPbxExtension(UtilInfoService.NVLObj(userInfo.get("pbxExtension"), ""));
+						vo.setConsultantUseyn(UtilInfoService.NVLObj(userInfo.get("consultantUseyn"), ""));
+						vo.setSystemcodeUsecode(UtilInfoService.NVLObj(userInfo.get("systemcodeUsecode"), ""));
+						JSONArray subobjs = (JSONArray) userInfo.get("authInfo");
+						
+						ret = userManagerService.updateAdminUserManage(vo);
+					}else {
+						 userManagerService.deleteAdminUserManage(messageDto.getId());
+					}
 					break;
 				case "LCODEINFO" :
 					if (messageDto.getProcessGubun().equals(Globals.SAVE_MODE_LIST) && object.get(Globals.JSON_RETURN_RESULT) != null) {
