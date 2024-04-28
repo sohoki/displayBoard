@@ -40,24 +40,29 @@ public class ProgrameInfoManageService {
 	@Transactional(readOnly = false)
 	public int insertProgrmInfo(ProgrmInfoDto progrmInfoDto) throws Exception {
 		ProgrmInfo progrmInfo = ProgrmInfo.builder()
-				.progrmFileNm(progrmInfoDto.getProgrmFileNm())
-				.progrmStrePath(progrmInfoDto.getProgrmStrePath())
-				.progrmKoreannm(progrmInfoDto.getProgrmKoreannm())
-				.progrmDc(progrmInfoDto.getProgrmDc())
-				.url(progrmInfoDto.getUrl())
-				.build();
+										.progrmFileNm(progrmInfoDto.getProgrmFileNm())
+										.progrmStrePath(progrmInfoDto.getProgrmStrePath())
+										.progrmKoreannm(progrmInfoDto.getProgrmKoreannm())
+										.progrmDc(progrmInfoDto.getProgrmDc())
+										.url(progrmInfoDto.getUrl())
+										.build();
 		return (uniMapper.selectIdDoubleCheckString("PROGRM_FILE_NM", "COMTNPROGRMLIST", "PROGRM_FILE_NM = ["+ progrmInfo.getProgrmFileNm() + "[" ) > 0) ? -1 :  progrmMapper.insertProgrmInfo(progrmInfo);
+	}
+	
+	@Transactional(readOnly = false)
+	public int insertExistProgrameInfo(List<ProgrmInfo> list) throws Exception {
+		return progrmMapper.insertExistProgrameInfo(list);
 	}
 	
 	@Transactional(readOnly = false)
 	public int updateProgrmInfo(ProgrmInfoDto progrmInfoDto) throws Exception {
 		ProgrmInfo progrmInfo = ProgrmInfo.builder()
-				.progrmFileNm(progrmInfoDto.getProgrmFileNm())
-				.progrmStrePath(progrmInfoDto.getProgrmStrePath())
-				.progrmKoreannm(progrmInfoDto.getProgrmKoreannm())
-				.progrmDc(progrmInfoDto.getProgrmDc())
-				.url(progrmInfoDto.getUrl())
-				.build();
+										.progrmFileNm(progrmInfoDto.getProgrmFileNm())
+										.progrmStrePath(progrmInfoDto.getProgrmStrePath())
+										.progrmKoreannm(progrmInfoDto.getProgrmKoreannm())
+										.progrmDc(progrmInfoDto.getProgrmDc())
+										.url(progrmInfoDto.getUrl())
+										.build();
 		return progrmMapper.updateProgrmInfo(progrmInfo);
 	}
 

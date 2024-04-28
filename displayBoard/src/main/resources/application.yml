@@ -4,6 +4,11 @@ server:
     context-path: /
     session:
       timeout : 3600
+  # ipcc 에서 token 인증 설정 정보 
+  linkage:
+    login_url : http://localhost:8080/api/backoffice/sys/system/systemLoginJWT.do
+    token_key : e+/NF2VpTezMww9A5bvPQm1WzSGPBtyF+zQWFgLtCkU=
+    system_name : DISP
 spring:
   profiles: 
     active: dev 
@@ -42,9 +47,11 @@ Globals:
   filePath : C:\\dev\\eGovFrameDev-4.1.0-64bit\\workspace\\IPCC\\IPCC\\backend_mo\\src\\main\\webapp\\upload
   editorPath : C:\\dev\\eGovFrameDev-4.1.0-64bit\\workspace\\IPCC\\IPCC\\backend_mo\\src\\main\\webapp\\upload\\editor
   Allow:
-    Origin: "http://localhost:8080"
+    Origin: http://localhost:8082
   crypto:
     algoritm : egovframe
+  IPCC:
+    url : http://localhost:8080
 springdoc:
   packages-to-scan: com.colabear754.springdoc_example.controllers
   default-produces-media-type: application/json;charset=UTF-8

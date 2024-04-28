@@ -47,9 +47,10 @@ public class EgovCcmCmmnDetailCodeManageService {
 	public CmmnDetailCodeDto selectCmmnDetail(String code){
 		return detailMapper.selectCmmnDetail(code);
 	}
+	// 연계
 	@Transactional(readOnly = false)
 	public int updateCmmnDetailCode(CmmnDetailCode vo) {
-		return vo.getMode().equals("Ins") ? detailMapper.insertCmmnDetailCode(vo) : detailMapper.updateCmmnDetailCode(vo);
+		return vo.getMode().equals("Ins") ? detailMapper.insertCmmnDetailCodeIPCC(vo) : detailMapper.updateCmmnDetailCode(vo);
 	}
 	@Transactional(readOnly = false)
 	public int deleteCmmnDetailCode(String code) {

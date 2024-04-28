@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.bas.program.mapper.ProgrmInfoManageMapper">
+	<select id="selectProgrmInfoList" resultType="ProgrmInfoDto">     	      
+		SELECT * FROM 
+		( 
+			SELECT 	
+				SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT, 
+				TB.* 
+			FROM 	
+			(	
+				SELECT @ROWNUM := @ROWNUM + 1 AS RNUM,
+					 A.PROGRM_FILE_NM, A.PROGRM_STRE_PATH, A.PROGRM_KOREAN_NM, A.PROGRM_DC, A.URL
+				FROM COMTNPROGRMLIST A,  (select @ROWNUM := 0) RN_TB
+				WHERE 1=1
+				<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchKeyword)">
+					AND 
+					( 
+						A.PROGRM_FILE_NM LIKE '%' #{params.searchKeyword} '%' 
+						OR
+						A.PROGRM_KOREAN_NM LIKE '%' #{params.searchKeyword} '%'
+					) 
+				</if>
+			) TB 
+		) TA
+		ORDER BY TA.RNUM DESC 
+		LIMIT #{params.firstIndex},#{params.recordCountPerPage} 
+		
+	</select>
+
+	<select id="selectProgrmInfoDetail" resultType="ProgrmInfoDto">
+		SELECT A.PROGRM_FILE_NM, A.PROGRM_STRE_PATH, A.PROGRM_KOREAN_NM, A.PROGRM_DC, A.URL
+		FROM COMTNPROGRMLIST A
+		WHERE A.PROGRM_FILE_NM = #{progrmFileNm}
+	</select>
+	<!-- 메뉴정보 총건수 조회 -->
+	<select id="selectProgrmListTotCnt"  resultType="Integer">
+		<![CDATA[
+		SELECT COUNT(PROGRM_FILE_NM) AS "totcnt" FROM LETTNPROGRMLIST
+		]]>
+	</select>
+	<insert id="insertProgrmInfo">
+		INSERT INTO COMTNPROGRMLIST	
+		(
+		    PROGRM_FILE_NM, PROGRM_STRE_PATH, PROGRM_KOREAN_NM, PROGRM_DC, URL
+		)
+		VALUES 
+		(
+			#{progrmFileNm}, #{progrmStrePath,jdbcType=VARCHAR}, #{progrmKoreannm,jdbcType=VARCHAR}, #{progrmDc,jdbcType=VARCHAR}, #{url,jdbcType=VARCHAR}	
+		)
+	</insert>
+	<insert id="insertExistProgrameInfo">
+		<foreach collection="list" item="item" separator=";">
+		INSERT INTO COMTNPROGRMLIST
+		(
+		    PROGRM_FILE_NM, PROGRM_STRE_PATH, PROGRM_KOREAN_NM, PROGRM_DC, URL
+		)
+		SELECT #{item.progrmFileNm}, #{item.progrmStrePath,jdbcType=VARCHAR}, #{item.progrmKoreannm,jdbcType=VARCHAR}, #{item.progrmDc,jdbcType=VARCHAR}, #{item.url,jdbcType=VARCHAR}
+		FROM DUAL
+		WHERE NOT EXISTS (
+							SELECT PROGRM_FILE_NM
+							FROM COMTNPROGRMLIST
+							WHERE PROGRM_FILE_NM =#{item.progrmFileNm}
+						 )
+		</foreach>
+	</insert>
+	<update id="updateProgrmInfo">
+		UPDATE COMTNPROGRMLIST SET PROGRM_STRE_PATH = #{progrmStrePath,jdbcType=VARCHAR}, 
+									PROGRM_KOREAN_NM = #{progrmKoreannm, jdbcType=VARCHAR}, 
+									PROGRM_DC = #{progrmDc, jdbcType=VARCHAR},     
+									URL = #{url, jdbcType=VARCHAR}             
+		WHERE PROGRM_FILE_NM = #{progrmFileNm}
+	</update>
+	
+	<delete id="deleteProgrmInfo">
+		<!-- 추후 삭제시 메뉴 에서 삭제 시키기 -->
+		DELETE FROM COMTNPROGRMLIST
+		WHERE PROGRM_FILE_NM = #{progrmFileNm}
+	</delete>
+	<delete id="deleteProgrmManageList">
+		<!-- 추후 삭제시 메뉴 에서 삭제 시키기 -->
+		DELETE FROM COMTNPROGRMLIST
+		WHERE PROGRM_FILE_NM IN 
+		<foreach collection="programFiles" item="item"  open="(" separator="," close=")">
+			#{item}
+		</foreach>	
+	</delete>
+	
+	
+	<delete id="deleteAllProgrm">
+		<![CDATA[
+			DELETE FROM COMTNPROGRMLIST WHERE PROGRM_FILE_NM <> 'dir'
+		]]>
+	</delete> 
+</mapper>

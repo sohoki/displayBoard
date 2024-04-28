@@ -27,8 +27,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.servlet.ModelAndView;
 import org.apache.commons.lang3.StringUtils;
-
-import com.display.backoffice.bas.menu.models.MenuCreatInfo;
 import com.display.backoffice.bas.menu.models.MenuInfo;
 import com.display.backoffice.bas.menu.models.dto.MenuInfoRequestDto;
 import com.display.backoffice.bas.menu.service.MenuCreateManageService;
@@ -50,7 +48,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 @Api(tags = {"메뉴 관리 정보 API"})
 @Slf4j
@@ -66,14 +63,14 @@ public class MenuInfoManageController {
 	private MenuInfoManageService menuService;
 	
 	//파일 업로드
-    @Autowired
+	@Autowired
 	private fileService uploadFile;
-	
+		
 	@Autowired
 	private MenuCreateManageService menuCreateService;
-	
-    @Autowired
-    private UniUtilManageService uniMangeServiec;
+		
+	@Autowired
+	private UniUtilManageService uniMangeServiec;
 
 	@Resource(name = "egovMessageSource")
 	EgovMessageSource egovMessageSource;
@@ -97,33 +94,32 @@ public class MenuInfoManageController {
 		try {
 			
 			// 기존 세션 체크 인증에서 토큰 방식으로 변경
-        	if (!jwtVerification.isVerification(request)) {
+			if (!jwtVerification.isVerification(request)) {
 
-        		ResultVO resultVO = new ResultVO();
-    			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-        	}
-        	
-        	
+			ResultVO resultVO = new ResultVO();
+			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
+		}
+		
+		
 			int pageUnit = searchVO.get(Globals.PAGE_UNIT) == null ?  propertiesService.getInt(Globals.PAGE_UNIT)
 					: Integer.valueOf((String) searchVO.get(Globals.PAGE_UNIT));
-		  
-	   	    PaginationInfo paginationInfo = new PaginationInfo();
-		    paginationInfo.setCurrentPageNo( Integer.parseInt(UtilInfoService.NVL(searchVO.get(Globals.PAGE_INDEX),"1")));
-		    paginationInfo.setRecordCountPerPage(pageUnit);
-		    paginationInfo.setPageSize(propertiesService.getInt(Globals.PAGE_SIZE));
-
-		    searchVO.put(Globals.PAGE_FIRST_INDEX, paginationInfo.getFirstRecordIndex());
-		    searchVO.put(Globals.PAGE_LAST_INDEX, paginationInfo.getLastRecordIndex());
-		    searchVO.put(Globals.PAGE_RECORD_PER_PAGE, paginationInfo.getRecordCountPerPage());
-		    List<Map<String, Object>> menuList = menuService.selectMenuManageList(searchVO);
-		    int totCnt =  menuList.size() > 0 ? Integer.valueOf(menuList.get(0).get(Globals.PAGE_TOTAL_RECORD_COUNT).toString()) : 0;
+			PaginationInfo paginationInfo = new PaginationInfo();
+			paginationInfo.setCurrentPageNo( Integer.parseInt(UtilInfoService.NVL(searchVO.get(Globals.PAGE_INDEX),"1")));
+			paginationInfo.setRecordCountPerPage(pageUnit);
+			paginationInfo.setPageSize(propertiesService.getInt(Globals.PAGE_SIZE));
+	
+			searchVO.put(Globals.PAGE_FIRST_INDEX, paginationInfo.getFirstRecordIndex());
+			searchVO.put(Globals.PAGE_LAST_INDEX, paginationInfo.getLastRecordIndex());
+			searchVO.put(Globals.PAGE_RECORD_PER_PAGE, paginationInfo.getRecordCountPerPage());
+			List<Map<String, Object>> menuList = menuService.selectMenuManageList(searchVO);
+			int totCnt =  menuList.size() > 0 ? Integer.valueOf(menuList.get(0).get(Globals.PAGE_TOTAL_RECORD_COUNT).toString()) : 0;
 			paginationInfo.setTotalRecordCount(totCnt);
-
+	
 			model.addObject(Globals.STATUS_REGINFO, searchVO);
 			model.addObject(Globals.JSON_RETURN_RESULT_LIST, menuList);
-		    model.addObject(Globals.PAGE_TOTAL_COUNT, totCnt);
-		    model.addObject(Globals.JSON_PAGEINFO, paginationInfo);
-		    model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+			model.addObject(Globals.PAGE_TOTAL_COUNT, totCnt);
+			model.addObject(Globals.JSON_PAGEINFO, paginationInfo);
+			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 		}catch(Exception e){
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 			model.addObject(Globals.STATUS_MESSAGE, e.toString());
@@ -146,13 +142,13 @@ public class MenuInfoManageController {
 											 HttpServletRequest request) throws Exception {
 		
 		// 기존 세션 체크 인증에서 토큰 방식으로 변경
-    	if (!jwtVerification.isVerification(request)) {
-
-    		ResultVO resultVO = new ResultVO();
+		if (!jwtVerification.isVerification(request)) {
+	
+			ResultVO resultVO = new ResultVO();
 			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-    	}
-    	
-    	
+		}
+		
+		
 		ModelAndView model = new ModelAndView (Globals.JSON_VIEW);
 		
 		model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
@@ -166,23 +162,23 @@ public class MenuInfoManageController {
 	public ModelAndView selectMenuLeftInfo( HttpServletRequest request) throws Exception {
 		
 		// 기존 세션 체크 인증에서 토큰 방식으로 변경
-    	if (!jwtVerification.isVerification(request)) {
-    		log.debug("jwtVerification  isVerificationAdmin");
-    		ResultVO resultVO = new ResultVO();
+		if (!jwtVerification.isVerification(request)) {
+			log.debug("jwtVerification  isVerificationAdmin");
+			ResultVO resultVO = new ResultVO();
 			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-    	}else {
-    		
-    		
-    		ModelAndView model = new ModelAndView (Globals.JSON_VIEW);
-    		model.addObject(Globals.ADMIN_INFO, jwtVerification.getTokenUserName(request));
-    		model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
-    		model.addObject(Globals.JSON_RETURN_RESULT, 
-    						menuService.selectMainMenuLeft(jwtVerification.getTokenUserName(request), 
+		}else {
+			
+			
+			ModelAndView model = new ModelAndView (Globals.JSON_VIEW);
+			model.addObject(Globals.ADMIN_INFO, jwtVerification.getTokenUserName(request));
+			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+			model.addObject(Globals.JSON_RETURN_RESULT, 
+							menuService.selectMainMenuLeft(jwtVerification.getTokenUserName(request), 
 							request.getScheme()+"://" + request.getServerName()+":"+ request.getServerPort()));
-    		
-    		return model;
-    	}
-    	
+			
+			return model;
+		}
+		
 	}
 	
 	/**
@@ -201,11 +197,11 @@ public class MenuInfoManageController {
 		//System.out.println("=========================== menuUpdate 시작");
 		
 		if (!jwtVerification.isVerification(request)) {
-    		ResultVO resultVO = new ResultVO();
+			ResultVO resultVO = new ResultVO();
 			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-    	}else {
-    		info.setUserId(jwtVerification.getTokenUserName(request));
-    	}
+		}else {
+			info.setUserId(jwtVerification.getTokenUserName(request));
+		}
 		
 		int ret = menuService.updateMenuManage(info);
 
@@ -246,10 +242,9 @@ public class MenuInfoManageController {
 //		}
 		if (!jwtVerification.isVerification(request)) {
 
-    		ResultVO resultVO = new ResultVO();
+			ResultVO resultVO = new ResultVO();
 			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-    	}
-    	
+		}
 		int ret = menuService.deleteMenuManage(menuNo);
 		if (ret > 0) {
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.common.delete"));
@@ -279,9 +274,9 @@ public class MenuInfoManageController {
 		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		if (!jwtVerification.isVerification(request)) {
 
-    		ResultVO resultVO = new ResultVO();
+			ResultVO resultVO = new ResultVO();
 			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-    	}
+		}
 		String systemCode = UtilInfoService.NVL(commandMap.get("systemCode"), "");
 		if (systemCode.equals("")) {
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
@@ -311,7 +306,7 @@ public class MenuInfoManageController {
 	@ApiOperation(value="메뉴목록 멀티 삭제한다.", notes = "성공시 메뉴목록 멀티 삭제합니다.")
 	@GetMapping("menuManageListDelete.do")
 	public ModelAndView deleteMenuManageList(@RequestParam("checkedMenuNoForDel") String checkedMenuNoForDel, 
-			                                 HttpServletRequest request)throws Exception {
+											HttpServletRequest request)throws Exception {
 		
 		ModelAndView model = new ModelAndView (Globals.JSON_VIEW);
 		// 0. Spring Security 사용자권한 처리
@@ -322,13 +317,10 @@ public class MenuInfoManageController {
 			
 			if (!jwtVerification.isVerification(request)) {
 
-	    		ResultVO resultVO = new ResultVO();
+				ResultVO resultVO = new ResultVO();
 				return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-	    	}
-	    	
+			}
 			int ret = menuService.deleteMenuManageList(checkedMenuNoForDel);
-			
-			
 			
 			if (ret == -1) {
 			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("menu.exist.fail"));
@@ -368,11 +360,11 @@ public class MenuInfoManageController {
 		
 		// 0. Spring Security 사용자권한 처리
 		if (!jwtVerification.isVerification(request)) {
-    		ResultVO resultVO = new ResultVO();
+			ResultVO resultVO = new ResultVO();
 			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-    	}else {
-    		menuIno.setUserId(jwtVerification.getTokenUserName(request));
-    	}
+		}else {
+			menuIno.setUserId(jwtVerification.getTokenUserName(request));
+		}
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("systemCode", menuIno.getSystemCode());
 			params.put("menuNo", menuIno.getMenuNo());
@@ -389,24 +381,24 @@ public class MenuInfoManageController {
 		
 		
 		String message = "";
-	    String states = "";
-	    menuIno.setRelateImageNm(fileNm);
-	    menuIno.setRelateImagePath(propertiesService.getString("Globals.filePath"));
+		String states = "";
+		menuIno.setRelateImageNm(fileNm);
+		menuIno.setRelateImagePath(propertiesService.getString("Globals.filePath"));
+	
+		int ret = menuService.updateMenuManage(menuIno);
 		
-	    int ret = menuService.updateMenuManage(menuIno);
-	  
-	    
-	    if (ret > 0) {
-	    	message = menuIno.getMode().equals(Globals.SAVE_MODE_INSERT) ? egovMessageSource.getMessage("success.common.insert") : egovMessageSource.getMessage("success.common.update");
-	    	states =  Globals.STATUS_SUCCESS;
-	    }else {
-	    	message = menuIno.getMode().equals(Globals.SAVE_MODE_INSERT) ? egovMessageSource.getMessage("fail.common.insert") : egovMessageSource.getMessage("fail.common.update");
-	    	states =  Globals.STATUS_FAIL;
-	    }
-	    
-	    model.addObject(Globals.STATUS, states);
+		
+		if (ret > 0) {
+			message = menuIno.getMode().equals(Globals.SAVE_MODE_INSERT) ? egovMessageSource.getMessage("success.common.insert") : egovMessageSource.getMessage("success.common.update");
+			states =  Globals.STATUS_SUCCESS;
+		}else {
+			message = menuIno.getMode().equals(Globals.SAVE_MODE_INSERT) ? egovMessageSource.getMessage("fail.common.insert") : egovMessageSource.getMessage("fail.common.update");
+			states =  Globals.STATUS_FAIL;
+		}
+		
+		model.addObject(Globals.STATUS, states);
 		model.addObject(Globals.STATUS_MESSAGE, message);
-	    
+		
 		return model;
 	}
 
@@ -427,9 +419,9 @@ public class MenuInfoManageController {
 		// 0. Spring Security 사용자권한 처리
 		try {
 			if (!jwtVerification.isVerification(request)) {
-	    		ResultVO resultVO = new ResultVO();
+				ResultVO resultVO = new ResultVO();
 				return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-	    	}
+			}
 			
 			
 			menuService.menuBndeAllDelete();
@@ -530,39 +522,38 @@ public class MenuInfoManageController {
 		try {
 			
 			if (!jwtVerification.isVerification(request)) {
-	    		ResultVO resultVO = new ResultVO();
+				ResultVO resultVO = new ResultVO();
 				return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-	    	}
+			}
 			
 			
 			String systemCode = UtilInfoService.NVL(searchVO.get(Globals.PAGE_SYSTEM_CODE),"IPCC");
 			int pageUnit = searchVO.get(Globals.PAGE_UNIT) == null ?  propertiesService.getInt(Globals.PAGE_UNIT) : 
 																Integer.valueOf((String) searchVO.get(Globals.PAGE_UNIT));
-			  
-		    searchVO.put(Globals.PAGE_SIZE, propertiesService.getInt(Globals.PAGE_SIZE));
-		  
-		    log.info(Globals.PAGE_UNIT+":" + pageUnit);
-		   
-		  
-	   	    PaginationInfo paginationInfo = new PaginationInfo();
-		    paginationInfo.setCurrentPageNo( Integer.parseInt(UtilInfoService.NVL(searchVO.get(Globals.PAGE_INDEX),"1")));
-		    paginationInfo.setRecordCountPerPage(pageUnit);
-		    paginationInfo.setPageSize(propertiesService.getInt(Globals.PAGE_SIZE));
-
-		    searchVO.put(Globals.PAGE_FIRST_INDEX, paginationInfo.getFirstRecordIndex());
-		    searchVO.put(Globals.PAGE_LAST_INDEX, paginationInfo.getLastRecordIndex());
-		    searchVO.put(Globals.PAGE_RECORD_PER_PAGE, paginationInfo.getRecordCountPerPage());
-		    searchVO.put(Globals.PAGE_SYSTEM_CODE, systemCode);
-		    			  
+			searchVO.put(Globals.PAGE_SIZE, propertiesService.getInt(Globals.PAGE_SIZE));
+			
+			log.info(Globals.PAGE_UNIT+":" + pageUnit);
+			
+			
+		   	PaginationInfo paginationInfo = new PaginationInfo();
+			paginationInfo.setCurrentPageNo( Integer.parseInt(UtilInfoService.NVL(searchVO.get(Globals.PAGE_INDEX),"1")));
+			paginationInfo.setRecordCountPerPage(pageUnit);
+			paginationInfo.setPageSize(propertiesService.getInt(Globals.PAGE_SIZE));
+	
+			searchVO.put(Globals.PAGE_FIRST_INDEX, paginationInfo.getFirstRecordIndex());
+			searchVO.put(Globals.PAGE_LAST_INDEX, paginationInfo.getLastRecordIndex());
+			searchVO.put(Globals.PAGE_RECORD_PER_PAGE, paginationInfo.getRecordCountPerPage());
+			searchVO.put(Globals.PAGE_SYSTEM_CODE, systemCode);
+						  
 			List<Map<String, Object>> list = menuCreateService.selectMenuCreatManagList(searchVO);
-	        int totCnt =  list.size() > 0 ? Integer.valueOf(list.get(0).get(Globals.PAGE_TOTAL_RECORD_COUNT).toString()) : 0;
-	   
+			int totCnt =  list.size() > 0 ? Integer.valueOf(list.get(0).get(Globals.PAGE_TOTAL_RECORD_COUNT).toString()) : 0;
+	
 			model.addObject(Globals.JSON_RETURN_RESULT_LIST, list);
-		    model.addObject(Globals.PAGE_TOTAL_COUNT, totCnt);
-		    paginationInfo.setTotalRecordCount(totCnt);
-		    model.addObject(Globals.JSON_PAGEINFO, paginationInfo);
-		    model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);	    
-		  
+			model.addObject(Globals.PAGE_TOTAL_COUNT, totCnt);
+			paginationInfo.setTotalRecordCount(totCnt);
+			model.addObject(Globals.JSON_PAGEINFO, paginationInfo);
+			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);	    
+			
 		}catch(Exception e) {
 			log.info(e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
@@ -585,26 +576,20 @@ public class MenuInfoManageController {
 		ModelAndView model = new ModelAndView (Globals.JSON_VIEW);
 		
 		if (!jwtVerification.isVerification(request)) {
-    		ResultVO resultVO = new ResultVO();
+			ResultVO resultVO = new ResultVO();
 			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-    	}else {
-    		
-    		String roleId = String.valueOf(params.get("roleId"));
-    		String checkedMenuNo = String.valueOf(params.get("checkedMenuNo"));
-    		String systemCode = String.valueOf(params.get("systemCode"));
-    		String userId = jwtVerification.getTokenUserName(request);
-    		String hid_menuGubun = String.valueOf(params.get("hid_menuGubun"));
-    		List<Map<String, Object>> menuList = (List<Map<String, Object>>) params.get("checkedMenuBasic");
-    		
-    		menuCreateService.insertMenuCreatList(roleId, systemCode, userId, checkedMenuNo, hid_menuGubun, menuList);
-    		model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
-    		model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.common.update"));
-    		
-    	}
-		
-		
-		
-		
+		}else {
+			
+			String roleId = String.valueOf(params.get("roleId"));
+			String checkedMenuNo = String.valueOf(params.get("checkedMenuNo"));
+			String userId = jwtVerification.getTokenUserName(request);
+			String hid_menuGubun = String.valueOf(params.get("hid_menuGubun"));
+			List<Map<String, Object>> menuList = (List<Map<String, Object>>) params.get("checkedMenuBasic");
+			menuCreateService.insertMenuCreatList(roleId,  userId, checkedMenuNo, hid_menuGubun, menuList);
+			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.common.update"));
+			
+		}
 		return model;
 	}
 	
@@ -622,9 +607,9 @@ public class MenuInfoManageController {
 		ModelAndView model = new ModelAndView (Globals.JSON_VIEW);
 		
 		if (!jwtVerification.isVerification(request)) {
-    		ResultVO resultVO = new ResultVO();
+			ResultVO resultVO = new ResultVO();
 			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
-    	}
+		}
 		
 		String systemCode = UtilInfoService.NVL(commandMap.get("systemCode"),"IPCC");
 		String hidMenuGubun = UtilInfoService.NVL(commandMap.get("hidMenuGubun"),"MENU_GUBUN_1");

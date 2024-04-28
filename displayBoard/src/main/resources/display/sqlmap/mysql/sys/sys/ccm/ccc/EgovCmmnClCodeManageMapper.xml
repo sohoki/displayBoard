@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.bas.code.mapper.EgovCmmnClCodeManageMapper">
+	<select id="selectCmmnClCodeListByPagination" resultType="camelmap">
+	
+		SELECT SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT,
+		TB.* FROM (
+				SELECT 
+						CL_CODE, CL_CODE_NM, USE_AT, DATE_FORMAT(LAST_UPDT_PNTTM, '%Y-%m-%d %H:%I') AS LAST_UPDT_PNTTM, 
+						LAST_UPDUSR_ID, CL_CODE_DC
+				FROM   COMTCCMMNCLCODE a
+				WHERE  1=1
+		        <if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchKeyword)">
+						<choose>
+							<when test="params.searchCondition == 'adminId'">
+								AND a.CL_CODE LIKE  CONCAT('%',#{params.searchKeyword},'%') 	
+							</when>
+							<otherwise>
+								and a.CL_CODE_NM LIKE CONCAT('%',#{params.searchKeyword},'%') 
+							</otherwise>
+						</choose>
+				</if>		        
+				<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.useYn)">
+					AND a.USE_YN = #{params.useYn}
+				</if>		     
+		        ORDER BY a.LAST_UPDT_PNTTM  DESC
+       ) TB 
+       LIMIT #{params.firstIndex} , #{params.recordCountPerPage}    
+	</select>
+	
+	<select id="selectCmmnClCodeList" resultType="lmap">
+		SELECT CL_CODE, CL_CODE_NM, USE_AT
+		FROM COMTCCMMNCLCODE
+		WHERE USE_AT = 'Y'
+	</select>
+	
+	
+	
+	<select id="selectCmmnClCodeDetail" resultType="CmmnClCode">
+		SELECT CL_CODE, CL_CODE_NM, USE_AT, CL_CODE_DC, FRST_REGISTER_ID
+		FROM COMTCCMMNCLCODE
+		WHERE CL_CODE = #{value}
+	</select>
+	
+	<insert id="insertCmmnClCode">
+		<![CDATA[
+		INSERT  INTO  COMTCCMMNCLCODE
+			(CL_CODE  ,  CL_CODE_NM ,  CL_CODE_DC ,  USE_AT ,  
+			FRST_REGIST_PNTTM ,  FRST_REGISTER_ID, LAST_UPDT_PNTTM, LAST_UPDUSR_ID) 
+		VALUES ( #{clCode} ,  #{clCodeNm} ,  #{clCodeDc} ,  #{useAt} ,  
+				NOW() ,  #{userId,jdbcType=VARCHAR}, NOW() ,  #{userId,jdbcType=VARCHAR}
+				)
+		]]>
+	</insert>
+	
+	<update id="updateCmmnClCode">
+	<![CDATA[
+		UPDATE COMTCCMMNCLCODE  SET CL_CODE_NM = #{clCodeNm}, 
+									CL_CODE_DC = #{clCodeDc}, 
+									USE_AT = #{useAt},   
+									SYSTEM_CODE =  #{systemCode,jdbcType=VARCHAR},
+									LAST_UPDUSR_ID = #{userId,jdbcType=VARCHAR}, 
+									LAST_UPDT_PNTTM = NOW()
+		WHERE CL_CODE = #{clCode}
+		]]>
+	</update>
+	
+	<delete id="deleteCmmnClCode">
+		DELETE FROM COMTCCMMNCLCODE 
+		WHERE CL_CODE = #{value};
+		
+		DELETE FROM COMTCCMMNCODE 
+		WHERE CL_CODE = #{value};
+		
+		DELETE FROM COMTCCMMNDETAILCODE 
+		WHERE CODE_ID IN (SELECT CODE_ID FROM COMTCCMMNCODE WHERE CL_CODE = #{value});
+	</delete>
+</mapper>

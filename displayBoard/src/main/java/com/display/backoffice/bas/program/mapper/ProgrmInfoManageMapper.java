@@ -20,6 +20,8 @@ public interface ProgrmInfoManageMapper {
     public int selectProgrmListTotCnt();
     
     public int insertProgrmInfo(ProgrmInfo vo);
+    
+    public int insertExistProgrameInfo(List<ProgrmInfo> list);
 	
     public int updateProgrmInfo(ProgrmInfo vo);
     

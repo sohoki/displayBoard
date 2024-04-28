@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.uat.role.mapper.RoleInfoManageMapper">
+
+	<select id="selectRoleInfoPageList" resultType="camelmap">     	      
+		SELECT * FROM 
+		( 
+			SELECT 	
+				SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT, 
+				TB.* 
+			FROM 	
+			(	
+				SELECT @ROWNUM := @ROWNUM + 1 AS RNUM,
+					A.ROLE_ID, A.ROLE_NAME, A.ROLE_DC, A.ROLE_USEYN, A.SYSTEM_CODE,
+					A.FRST_REGISTER_ID, DATE_FORMAT(A.FRST_REGIST_PNTTM, '%Y-%m-%d') FRST_REGIST_PNTTM, 
+					DATE_FORMAT(A.LAST_UPDT_PNTTM, '%Y-%m-%d') LAST_UPDT_PNTTM, A.LAST_UPDUSR_ID
+				FROM TB_ROLEINFO A,  (select @ROWNUM := 0) RN_TB
+				WHERE 1=1
+				<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchKeyword)">
+					AND 
+					( 
+					
+						A.SERVER_NAME LIKE CONCAT ('%', #{params.searchKeyword},'%') 
+						OR
+						A.SERVER_DC LIKE CONCAT ('%', #{params.searchKeyword},'%') 
+					) 
+				</if>
+				<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.systemCode)">
+					AND A.SYSTEM_CODE = #{params.systemCode}
+				</if>
+			) TB 
+		) TA
+		ORDER BY TA.RNUM DESC 
+		LIMIT #{params.firstIndex},#{params.recordCountPerPage} 
+		
+	</select>
+	<select id="selectRoleInfoComboList" resultType="camelmap">     
+		SELECT A.ROLE_ID, A.ROLE_NAME
+		FROM TB_ROLEINFO A
+		WHERE ROLE_USEYN = 'Y'
+	</select>
+	<select id="selectRoleInfoDetail" resultType="RoleInfo">
+		SELECT  A.ROLE_ID, A.ROLE_NAME, A.ROLE_DC, A.ROLE_USEYN, A.SYSTEM_CODE,
+		    	A.FRST_REGIST_PNTTM, A.FRST_REGISTER_ID, A.LAST_UPDT_PNTTM, A.LAST_UPDUSR_ID
+		FROM TB_ROLEINFO A
+		WHERE A.ROLE_ID = #{roleId}
+	</select>
+	<insert id="insertRoleInfo">
+		INSERT INTO TB_ROLEINFO	
+		(
+		    ROLE_ID, ROLE_NAME, ROLE_DC, ROLE_USEYN, SYSTEM_CODE,
+		    FRST_REGIST_PNTTM, FRST_REGISTER_ID, LAST_UPDT_PNTTM, LAST_UPDUSR_ID
+		)
+		VALUES 
+		(
+			#{roleId}, #{roleName}, #{roleDc,jdbcType=VARCHAR}, #{roleUseyn,jdbcType=VARCHAR}, #{systemCode,jdbcType=VARCHAR},
+			NOW(), #{userId}, NOW(), #{userId}
+		)
+	</insert>
+	<update id="updateRoleInfo">
+		UPDATE TB_ROLEINFO SET ROLE_NAME = #{roleName}, 
+								SYSTEM_CODE= #{systemCode}, 
+								ROLE_DC = #{roleDc,jdbcType=VARCHAR},
+								ROLE_USEYN = #{roleUseyn,jdbcType=VARCHAR},
+								LAST_UPDT_PNTTM = NOW(), 
+								LAST_UPDUSR_ID = #{userId, jdbcType=VARCHAR}           
+		WHERE ROLE_ID = #{roleId}
+	</update>
+	
+	<delete id="deleteRoleInfo">
+		<!-- 추후 삭제시 메뉴 에서 삭제 시키기 -->
+		DELETE FROM TB_ROLEINFO
+		WHERE ROLE_ID = #{roleId}
+	</delete>
+</mapper>

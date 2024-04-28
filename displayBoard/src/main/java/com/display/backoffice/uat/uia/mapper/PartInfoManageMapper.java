@@ -19,9 +19,12 @@ public interface PartInfoManageMapper {
 	
 	public int insertPartInfoManage(PartInfo vo);
 	
+	public int insertPartInfoNetworkManage(PartInfo vo);
+	
 	public int updatePartInfoManage(PartInfo vo);
 	
 	public int updatePartEndInfoManage(PartInfo vo);
 	
 	public int deletePartInfoManage(String PartId);
+	
 }

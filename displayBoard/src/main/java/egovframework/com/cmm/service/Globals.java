@@ -39,6 +39,8 @@ public class Globals {
 	public static final String REFRESH_TOKEN = "refreshToken";
 	
 	
+	public static final String HTTP_STATUS = "status";
+	public static final String HTTP_STATUS_C = "STATUS";
 	public static final String STATUS_UNIQUE = "UNIQUE";
 	public static final String STATUS_UNIQUE_FAIL = "UNIQUE_FAIL";
 	public static final String STATUS_LOGIN_FAIL = "LOGIN_FAIL";
@@ -57,6 +59,8 @@ public class Globals {
 	public static final String JSON_RETURN_RESULT_LIST = "resultList";
 	public static final String JSON_PAGEINFO = "paginationInfo";
 	
+	public static final String NETWORK_RESULT_PROGRAME = "PROGRAME";
+	public static final String NETWORK_RESULT_MENUINFO = "MENUINFO";
 	
 	
 	public static final String NEXUS_CENTER_COMBO = "centerlist";
@@ -67,6 +71,9 @@ public class Globals {
 
 	public static final String SAVE_MODE_INSERT = "Ins";
 	public static final String SAVE_MODE_UPDATE = "Edt";
+	public static final String SAVE_MODE_LIST = "LIST";
+	public static final String SAVE_MODE_DELETE = "DELETE";
+	
 	public static final String SYSLOG_PROCESS_SE_CODE_INSERT = "I";
 	public static final String SYSLOG_PROCESS_SE_CODE_UPDATE = "U";
 	public static final String SYSLOG_PROCESS_SE_CODE_DELETE = "D";
@@ -118,5 +125,11 @@ public class Globals {
 	
 	public static final String STATUS_NTUNIQUE = "UNIQUE FAIL";
 	public static final String JSON_RESULT_REPORT = "reportInfo";
+	
+	
+	//token 
+	public static final String USER_ROLE_ID = "roleId";
+	public static final String USER_PART_ID = "partId";
+	public static final String USER_INSTT_CODE = "insttCode";
 	
 }

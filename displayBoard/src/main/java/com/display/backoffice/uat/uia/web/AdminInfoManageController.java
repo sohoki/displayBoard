@@ -69,17 +69,14 @@ public class AdminInfoManageController {
     @Resource(name="egovMessageSource")
 	protected EgovMessageSource egovMessageSource;
 	
-    /*
-	@Autowired
-	private PartInfoManageService partService;
-	*/
+    
 	/** JwtVerification */
 	@Autowired
 	private JwtVerification jwtVerification;
 	
 	
 	
-	//@PreAuthorize("hasAnyRole('ROLE_B2C','ROLE_B2B')")
+	
 	@ApiOperation(value="관리자 리스트", notes = "성공시 관리자 리스트를 반환 합니다.")
 	@PostMapping("empList.do")
 	public ModelAndView selectUserManagerList(@RequestBody Map<String, Object> searchVO,
@@ -92,6 +89,8 @@ public class AdminInfoManageController {
 	    	if (!jwtVerification.isVerification(request)) {
 	    		ResultVO resultVO = new ResultVO();
 				return jwtVerification.handleAuthError(resultVO); // 토큰 확인
+	    	}else {
+	    		
 	    	}
 
 	    	

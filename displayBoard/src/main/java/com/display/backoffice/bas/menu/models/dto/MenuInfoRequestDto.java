@@ -36,7 +36,6 @@ public class MenuInfoRequestDto {
 	
 	private String menuPageTarget;
 	private String menuPopupnfo;
-	
 	private String menuPrivacy;
 	
  	private int cnt = 0;

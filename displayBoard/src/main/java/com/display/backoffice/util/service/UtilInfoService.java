@@ -60,15 +60,7 @@ public class UtilInfoService {
 	
 	@Autowired
 	protected EgovPropertyService propertiesService;
-	/*
-	@Autowired
-    public InterfaceInfoManageService interfaceService;
-
-	@Autowired
-    private void InterfaceInfoManageService(InterfaceInfoManageService interfaceService) {
-        this.interfaceService = interfaceService;
-    }
-	*/
+	
 	public void XMLParse(String xmlData) throws ParserConfigurationException, SAXException, IOException{
 		InputSource is = new InputSource(new StringReader(xmlData));
 		

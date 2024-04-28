@@ -25,6 +25,10 @@ public class MessageService {
 	private String routingKey;
 
 	*/
+	
+	@Value("${server.linkage.system_name}")
+	private String systemCode;
+	
 	private final RabbitTemplate rabbitTemplate;
 	
 	private final MessageInfoService messageService;
@@ -55,8 +59,8 @@ public class MessageService {
 	/**
 	 * Queue에서 메시지를 구독
 	 *  
-	 * @param messageDto 구독한 메시지를 담고 있는 MessageDto 객체
-	 */
+	 * @param messageDto 구독한 메시지를 담고 있는 MessageDto 객체	
+	 * 
 	@RabbitListener(queues = "${rabbitmq.queue.name}")
 	public void reciveMessage(MessageDto messageDto) {
 	  log.info("display Received message: {}", messageDto.toString());
@@ -64,7 +68,7 @@ public class MessageService {
 	  //메세지가 되었을떄 처리 하기 
 	  
 	  MessageInfo info = MessageInfo.builder()
-			  		     .messageSystemcode("display")
+			  		     .messageSystemcode(systemCode)
 			  		     .messageprocessGubun(messageDto.getProcessGubun())
 			  		     .messageprocessName(messageDto.getProcessName())
 			  		     .id(messageDto.getId())
@@ -72,4 +76,6 @@ public class MessageService {
 	  messageService.ReceiveMessageInfo( info);
 	  
 	}
+	*/
+	
 }

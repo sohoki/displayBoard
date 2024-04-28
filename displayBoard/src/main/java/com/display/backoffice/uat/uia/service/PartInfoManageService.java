@@ -48,7 +48,9 @@ public class PartInfoManageService {
 		return partMapper.selectPartInfoDetail(partId);
 	}
 
-	
+	public int deletePartInfoManage(String partId)throws Exception{
+		return partMapper.deletePartInfoManage(partId);
+	}
 	public int updatePartInfoManage(PartInfo vo) throws Exception {
 		// TODO Auto-generated method stub
 		//환경 변수가 오라클이냐 아니냐 구분으로 확인 하기 
@@ -61,5 +63,17 @@ public class PartInfoManageService {
 			return partMapper.updatePartInfoManage(vo);
 		}
 	}
-	
+	// 추후 partCode로 변경
+	public int updatePartInfoNetworkManage(PartInfo vo) throws Exception {
+		// TODO Auto-generated method stub
+		//환경 변수가 오라클이냐 아니냐 구분으로 확인 하기 
+		if (vo.getMode().equals("Ins")){
+			if ( dbType.equals("oracle")){
+				vo.setPartId(egovGroupIdGnrService.getNextStringId());
+			}
+			return partMapper.insertPartInfoNetworkManage(vo);
+		}else {
+			return partMapper.updatePartInfoManage(vo);
+		}
+	}
 }

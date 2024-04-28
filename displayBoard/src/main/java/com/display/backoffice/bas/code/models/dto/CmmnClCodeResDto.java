@@ -1,6 +1,6 @@
-package com.display.backoffice.bas.code.models;
+package com.display.backoffice.bas.code.models.dto;
 
-import java.io.Serializable;
+import com.display.backoffice.bas.code.models.CmmnClCode;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,12 +13,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CmmnClCode implements Serializable {
-
-	/**
-	 * serialVersionUID
-	 */
-	private static final long serialVersionUID = 1L;
+public class CmmnClCodeResDto {
 
 	private String clCode = "";
 	
@@ -32,6 +27,10 @@ public class CmmnClCode implements Serializable {
     
     private String lastUpdusrId   = "";
     
+    private String frstRegistPnttm = "";
+    
+    private String lastUpdtPnttm = "";
+    
     private String menuGubun;	
     
     private String mode;
@@ -39,5 +38,8 @@ public class CmmnClCode implements Serializable {
     private String userId;
     
     private String systemCode;
-
+    
+    private String totalRecordCount;
+    
+    
 }

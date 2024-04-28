@@ -3,20 +3,20 @@ package com.display.backoffice.bas.menu.service;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.display.backoffice.bas.menu.mapper.MenuCreateManageMapper;
 import com.display.backoffice.bas.menu.models.MenuCreatInfo;
+import com.display.backoffice.bas.menu.models.dto.menuCreatdetailInfoReqDto;
 import com.display.backoffice.util.service.UtilInfoService;
-
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class MenuCreateManageService {
 
 	@Autowired
@@ -53,14 +53,41 @@ public class MenuCreateManageService {
 		return createMapper.selectMenuCreatManageList_D(searchVO);
 	}
 
+	
 	@Transactional(readOnly = false)
-	public void insertMenuCreatList(String authorCode, String systemCode, String userId, 
+	public void insertMenuManage_System(List<menuCreatdetailInfoReqDto> list) throws Exception {
+		
+		try {
+			createMapper.insertMenuManage_System(list);
+			
+			MenuCreatInfo menuCreatVO = new MenuCreatInfo();
+			menuCreatVO.setRoleId(list.get(0).getRoleId());
+			
+			int AuthorCnt = createMapper.selectMenuCreatCnt_S(menuCreatVO);
+			if (AuthorCnt > 0) {
+				createMapper.deleteMenuCreat_S(menuCreatVO);
+			}
+					
+			for (menuCreatdetailInfoReqDto menu : list) {
+				MenuCreatInfo info = MenuCreatInfo.builder()
+												.roleId(menu.getRoleId())
+												.menuNo(menu.getMenuNo())
+												.userId("SYSTEM")
+												.build();
+				createMapper.insertMenuCreat_S(info);
+			}
+		}catch(Exception e) {
+			log.error("insertMenuManage_System error:" + e.toString());
+		}
+	}
+	
+	@Transactional(readOnly = false)
+	public void insertMenuCreatList(String authorCode, String userId, 
 									String checkedMenuNoForInsert, String hid_menuGubun, List<Map<String, Object>> menuList) throws Exception {
 		int AuthorCnt = 0;
 		
 		MenuCreatInfo menuCreatVO = new MenuCreatInfo();
 		menuCreatVO.setRoleId(authorCode);
-		menuCreatVO.setSystemCode(systemCode);
 		
 		AuthorCnt = createMapper.selectMenuCreatCnt_S(menuCreatVO);
 		if (AuthorCnt > 0) {
@@ -72,7 +99,6 @@ public class MenuCreateManageService {
 			for (String menu : insertMenuNo) {
 				menuCreatVO.setRoleId(authorCode);
 				menuCreatVO.setMenuNo(menu);
-				menuCreatVO.setSystemCode(systemCode);
 				menuCreatVO.setUserId(userId);
 				createMapper.insertMenuCreat_S(menuCreatVO);
 			}
@@ -81,7 +107,6 @@ public class MenuCreateManageService {
 				menuCreatVO.setRoleId(authorCode);
 				menuCreatVO.setMenuNo(menuBasic.get("id").toString());
 				menuCreatVO.setMenuBasicInfo(menuBasic.get("basicMenu").toString());
-				menuCreatVO.setSystemCode(systemCode);
 				menuCreatVO.setUserId(userId);
 				createMapper.insertMenuCreat_S(menuCreatVO);
 			}

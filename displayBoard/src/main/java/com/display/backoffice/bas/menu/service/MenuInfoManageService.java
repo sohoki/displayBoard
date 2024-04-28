@@ -134,7 +134,7 @@ public class MenuInfoManageService {
 		return menuMapper.selectMenuListT_D();
 	}
 
-	@NoLogging
+	
 	public List<Map<String, Object>> selectMainMenuHead(String empNo) throws Exception {
 		return menuMapper.selectMainMenuHead(empNo);
 	}

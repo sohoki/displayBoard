@@ -5,37 +5,50 @@
 		SELECT X.* , B.ALL_INSTT_NM
 		FROM (
 			SELECT 
-				CONCAT(CONCAT(LPAD('', (3*(LEVEL -1)), ' '), 
-				IF (LEVEL >1, '└','')),
-				HI.PART_NM) AS PART_NM_HI, 
-				HI.PART_NM,
-				PARENT_PART_ID, 
+				CASE WHEN HO.PARENT_PART_ID = '0' THEN 
+			         HO.PART_NM
+			         ELSE 
+					CONCAT(CONCAT(LPAD('', (3*(LEVEL -1)), ' '), 
+						IF (LEVEL >1, '└','')),HO.PART_NM) 
+				END AS PART_NM_HI, 
+				HO.PART_NM,
+				HO.PARENT_PART_ID, 
 				LEVEL, 
-				HI.PART_ORDER, 
-				HI.PART_ID,
-				HI.PART_USEYN,
-				HI.PART_DC,
-				HI.INSTT_CODE,
-				HI.PART_ENDYN,
-				HI.PART_HEAD_USER_ID,
-				fn_ManagerNm(HI.PART_HEAD_USER_ID) PART_HEAD_USER_NM,
-				HI.PART_END_DE,
-				DATE_FORMAT(SUBSTRING( PART_CREATE_DE, 1,8),'%Y-%m-%d') AS PART_CREATE_DE 
+				HO.path,
+				HO.PART_ORDER,
+				HO.PART_ID,
+				HO.PART_USEYN,
+				HO.PART_DC,
+				HO.INSTT_CODE,
+				HO.PART_ENDYN,
+				HO.PART_HEAD_USER_ID,
+				fn_ManagerNm(HO.PART_HEAD_USER_ID) PART_HEAD_USER_NM,
+				HO.PART_END_DE,
+				DATE_FORMAT(SUBSTRING(HO.PART_CREATE_DE, 1,8),'%Y-%m-%d') AS PART_CREATE_DE
 			 FROM
 			 	( 
-			    	SELECT 
-			    		FN_HIERARCHY(PART_ID) AS PARTID, @LEVEL AS LEVEL, 
-						@ROWNUM :=@ROWNUM + 1 AS ORDERS 
-			     	FROM 
-			     		( 
-			            	SELECT @START_WITH := 0, 
-			                @PARTID := @START_WITH, 
-			                @LEVEL := 0 
-			          	) 
-						VARS, TB_PARTINFO , (SELECT @ROWNUM :=0) TMP
-					WHERE @PARTID IS NOT NULL 
-			     ) HO , TB_PARTINFO HI 
-			WHERE HO.PARTID = HI.PART_ID
+			    	WITH RECURSIVE CTE(PART_ID, PART_NM, PARENT_PART_ID, level, path, PART_ORDER, 
+			    				   PART_USEYN, PART_DC, INSTT_CODE,
+			    				   PART_ENDYN, PART_HEAD_USER_ID, PART_CREATE_DE, PART_END_DE) AS (
+					  SELECT PART_ID, PART_NM, PARENT_PART_ID, 0, CAST(PART_ID AS CHAR(200)) , 
+					  		PART_ORDER, PART_USEYN, PART_DC, INSTT_CODE, 
+					  		PART_ENDYN, PART_HEAD_USER_ID, PART_CREATE_DE, PART_END_DE
+					  FROM TB_PARTINFO
+					  WHERE PARENT_PART_ID = '0'
+					  UNION ALL
+					  SELECT t.PART_ID, t.PART_NM, t.PARENT_PART_ID, tp.level + 1, 
+					  		CONCAT(tp.path, ', ', t.PART_ID), t.PART_ORDER, t.PART_USEYN,
+					  		t.PART_DC, t.INSTT_CODE,
+					  		t.PART_ENDYN, t.PART_HEAD_USER_ID, t.PART_CREATE_DE, t.PART_END_DE
+					  FROM TB_PARTINFO t
+					  INNER JOIN CTE tp ON t.PARENT_PART_ID = tp.PART_ID
+					)
+					SELECT PART_ID, PART_NM, PARENT_PART_ID, level, PART_ORDER, path,
+						   PART_USEYN, PART_DC, INSTT_CODE,
+						   PART_ENDYN, PART_HEAD_USER_ID, PART_CREATE_DE, PART_END_DE
+					FROM CTE
+					ORDER BY path , PART_ORDER asc 
+			     ) HO 
 			<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchKeyword)">
 				<choose>
 					<when test="params.searchCondition == 'params.partId'">
@@ -46,69 +59,115 @@
 					</otherwise>
 				</choose>
 			</if>	
+			<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.roleId) and params.roleId != 'ROLE_ADMIN'">
+					AND HO.INSTT_CODE = #{params.insttCode} 
+					<choose>
+						<when test="params.roleId == 'ROLE_TEAM'">
+							AND HO.PART_ID IN (WITH RECURSIVE  CTE AS (
+												SELECT 
+													PART_ID
+												FROM TB_PARTINFO
+												WHERE PART_ID  = #{params.partId}
+												UNION ALL
+												SELECT 
+													ac.PART_ID, ac.PARENT_PART_ID
+												FROM TB_PARTINFO ac
+												INNER JOIN CTE bbc on ac.PARENT_PART_ID = bbc.PART_ID
+												)
+												SELECT PART_ID from CTE
+											)
+						</when><otherwise>
+							AND a.PART_ID = #{params.partId} 
+						</otherwise>
+					</choose>
+				</if>
 			<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchInsttCode)">
 				AND INSTT_CODE = #{params.searchInsttCode}
 			</if>
-			ORDER BY HO.ORDERS ASC  	
 		)X LEFT JOIN  COMTNINSTTCODE B
-		ON X.INSTT_CODE = B.INSTT_CODE	 	    
+		ON X.INSTT_CODE = B.INSTT_CODE	
+		ORDER BY path , PART_ORDER ASC  	    
 	</select>
 	<select id="selectPartInfoDetail"  resultType="PartInfoVO">
-       SELECT  PART_ID, PART_NM, PART_CREATE_DE, PART_DC, PART_USEYN, PARENT_PART_ID, PART_ORDER, INSTT_CODE
+       SELECT  PART_ID, PART_NM, PART_CREATE_DE, PART_DC, PART_USEYN, PARENT_PART_ID, PART_ORDER, INSTT_CODE,
        		   PART_ENDYN, PART_END_DE, PART_HEAD_USER_ID
 	   FROM TB_PARTINFO
 	   WHERE PART_ID = #{partId}		  
     </select>
     
 	<select id="selectPartInfoCombo" resultType="PartInfoVO">
-		SELECT 			
-			CONCAT(CONCAT(LPAD('', (3*(LEVEL -1)), ' '), 
-			IF (LEVEL >1, '└','')),
-			HI.PART_NM) AS PART_NM_HI, 
-			HI.PART_NM,
-			PARENT_PART_ID, 
-			LEVEL , 
-			HI.PART_ORDER, 
-            HI.PART_ID, 
-            HI.PART_USEYN, 
-            HI.PART_DC,
-            HI.PART_CREATE_DE,
-            HI.PART_HEAD_USER_ID, 
-            HI.PART_END_DE,
-            HI.PART_ENDYN
-		FROM ( 
-				SELECT 
-					FN_HIERARCHY(PART_ID) AS PARTID,
-					@LEVEL AS LEVEL, 
-					@ROWNUM :=@ROWNUM + 1 AS ORDERS 
-		     	FROM 
-		     		(
-		            	SELECT 
-		            		@START_WITH := 0, 
-							@PARTID := @START_WITH, 
-		                   	@LEVEL := 0 
-					) 
-					VARS, TB_PARTINFO , (SELECT @ROWNUM :=0) TMP
-		     	WHERE @PARTID IS NOT NULL 
-		     ) HO , TB_PARTINFO HI 
-		WHERE  HO.PARTID  =HI.PART_ID
-			   AND HI.PART_USEYN ='Y'
+		SELECT 
+				CASE WHEN HO.PARENT_PART_ID = '0' THEN 
+			         HO.PART_NM
+			         ELSE 
+					CONCAT(CONCAT(LPAD('', (3*(LEVEL -1)), ' '), 
+						IF (LEVEL >1, '└','')),HO.PART_NM) 
+				END AS PART_NM_HI, 
+				HO.PART_NM,
+				HO.PARENT_PART_ID, 
+				LEVEL, 
+				HO.path,
+				HO.PART_ORDER,
+				HO.PART_ID,
+				HO.PART_USEYN,
+				HO.PART_DC,
+				HO.INSTT_CODE,
+				HO.PART_ENDYN,
+				HO.PART_HEAD_USER_ID,
+				fn_ManagerNm(HO.PART_HEAD_USER_ID) PART_HEAD_USER_NM,
+				HO.PART_END_DE,
+				DATE_FORMAT(SUBSTRING(HO.PART_CREATE_DE, 1,8),'%Y-%m-%d') AS PART_CREATE_DE
+			 FROM
+			 	( 
+			    	WITH RECURSIVE CTE(PART_ID, PART_NM, PARENT_PART_ID, level, path, PART_ORDER, 
+			    				   PART_USEYN, PART_DC, INSTT_CODE,
+			    				   PART_ENDYN, PART_HEAD_USER_ID, PART_CREATE_DE, PART_END_DE) AS (
+					  SELECT PART_ID, PART_NM, PARENT_PART_ID, 0, CAST(PART_ID AS CHAR(200)) , 
+					  		PART_ORDER, PART_USEYN, PART_DC, INSTT_CODE, 
+					  		PART_ENDYN, PART_HEAD_USER_ID, PART_CREATE_DE, PART_END_DE
+					  FROM TB_PARTINFO
+					  WHERE PARENT_PART_ID = '0'
+					  UNION ALL
+					  SELECT t.PART_ID, t.PART_NM, t.PARENT_PART_ID, tp.level + 1, 
+					  		CONCAT(tp.path, ', ', t.PART_ID), t.PART_ORDER, t.PART_USEYN,
+					  		t.PART_DC, t.INSTT_CODE,
+					  		t.PART_ENDYN, t.PART_HEAD_USER_ID, t.PART_CREATE_DE, t.PART_END_DE
+					  FROM TB_PARTINFO t
+					  INNER JOIN CTE tp ON t.PARENT_PART_ID = tp.PART_ID
+					)
+					SELECT PART_ID, PART_NM, PARENT_PART_ID, level, PART_ORDER, path,
+						   PART_USEYN, PART_DC, INSTT_CODE,
+						   PART_ENDYN, PART_HEAD_USER_ID, PART_CREATE_DE, PART_END_DE
+					FROM CTE
+					ORDER BY path , PART_ORDER ASC 
+			     ) HO  
+			WHERE HO.PART_USEYN ='Y'
 			<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchInsttCode)">
 				AND INSTT_CODE = #{params.searchInsttCode}
 			</if>
-		ORDER BY HO.ORDERS ASC  
+			ORDER BY path , PART_ORDER ASC 
     </select>
     
     
     <insert id="insertPartInfoManage">
         INSERT INTO TB_PARTINFO (PARENT_PART_ID, PART_CREATE_DE,  PART_NM, PART_DC, PART_USEYN, 
-        						PART_ORDER, INSTT_CODE, PART_HEAD_USER_ID, PART_END_DE, PART_ENDYN)
+        						PART_ORDER, INSTT_CODE, PART_HEAD_USER_ID, PART_END_DE, PART_ENDYN, PART_ID)
         VALUES (#{parentPartId},  date_format(now(), '%Y%m%d%H%i%s') , #{partNm} , 
         		#{partDc,jdbcType=VARCHAR},#{partUseyn,jdbcType=VARCHAR}, 
         		#{partOrder, jdbcType=VARCHAR},  #{insttCode, jdbcType=VARCHAR}, #{partHeadUserId, jdbcType=VARCHAR}, 
-        		#{partEndyn, jdbcType=VARCHAR}, #{partEndDe, jdbcType=VARCHAR}
+        		#{partEndyn, jdbcType=VARCHAR}, #{partEndDe, jdbcType=VARCHAR}, FN_PARTCODE()
         )                          
     </insert>
+    <insert id="insertPartInfoNetworkManage">
+        INSERT INTO TB_PARTINFO (PARENT_PART_ID, PART_CREATE_DE,  PART_NM, PART_DC, PART_USEYN, 
+        						PART_ORDER, INSTT_CODE, PART_HEAD_USER_ID, PART_END_DE, PART_ENDYN, PART_ID)
+        VALUES (#{parentPartId},  date_format(now(), '%Y%m%d%H%i%s') , #{partNm} , 
+        		#{partDc,jdbcType=VARCHAR},#{partUseyn,jdbcType=VARCHAR}, 
+        		#{partOrder, jdbcType=VARCHAR},  #{insttCode, jdbcType=VARCHAR}, #{partHeadUserId, jdbcType=VARCHAR}, 
+        		#{partEndyn, jdbcType=VARCHAR}, #{partEndDe, jdbcType=VARCHAR} , #{partId, jdbcType=VARCHAR}
+        )                          
+    </insert>
+    
     <update id="updatePartInfoManage">
 	    UPDATE  TB_PARTINFO SET PART_NM = #{partNm} 
 	                            ,PART_DC = #{partDc,jdbcType=VARCHAR} 
@@ -132,5 +191,5 @@
 		DELETE FROM  TB_PARTINFO
 		WHERE PART_ID = #{partId}
 	</delete>
-
+	
 </mapper>

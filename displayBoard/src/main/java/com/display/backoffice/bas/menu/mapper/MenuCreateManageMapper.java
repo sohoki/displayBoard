@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.Param;
 import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 import com.display.backoffice.bas.menu.models.MenuCreatInfo;
+import com.display.backoffice.bas.menu.models.dto.MenuInfoRequestDto;
+import com.display.backoffice.bas.menu.models.dto.menuCreatdetailInfoReqDto;
 
 
 @Mapper
@@ -17,6 +19,8 @@ public interface MenuCreateManageMapper {
 	public int selectMenuCreatManageTotCnt_S(String searchKeyword);
 	
 	public MenuCreatInfo selectAuthorByUsr(String empNo);
+	
+	public int insertMenuManage_System(List<menuCreatdetailInfoReqDto> list);
 	
 	public int selectUsrByPk(String empNo);
 	

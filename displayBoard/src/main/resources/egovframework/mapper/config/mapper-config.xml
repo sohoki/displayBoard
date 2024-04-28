@@ -34,7 +34,8 @@
 		<typeAlias alias="PartInfoVO"		type="com.display.backoffice.uat.uia.models.PartInfoVO" />
 		<typeAlias alias="UniUtilInfo"		type="com.display.backoffice.uat.uia.models.UniUtilInfo" />
 		
-		
+		<typeAlias alias="RoleInfo"	         type="com.display.backoffice.uat.role.models.RoleInfo" />
+		<typeAlias alias="RoleInfoRequestDto"  type="com.display.backoffice.uat.role.models.dto.RoleInfoRequestDto" />
 		
 		<!--  전문 관련 models 
 		<typeAlias alias="SendMsgInfoVO"		type="com.display.backoffice.sts.xml.models.SendMsgInfoVO" />
@@ -45,12 +46,29 @@
 		
 		
 		-->
+		
+		<typeAlias alias="ProgrmInfoDto"	type="com.display.backoffice.bas.program.models.dto.ProgrmInfoDto" />	
+		<typeAlias alias="ProgrmInfo"	    type="com.display.backoffice.bas.program.models.ProgrmInfo" />
+		
+		<typeAlias alias="CmmnCodeDto"		type="com.display.backoffice.bas.code.models.dto.CmmnCodeDto" />
+		<typeAlias alias="CmmnClCodeResDto"		type="com.display.backoffice.bas.code.models.dto.CmmnClCodeResDto" />
+		<typeAlias alias="CmmnDetailCodeDto"		type="com.display.backoffice.bas.code.models.dto.CmmnDetailCodeDto" />
+		
+		<typeAlias alias="CmmnCode"		type="com.display.backoffice.bas.code.models.CmmnCode" />
+		<typeAlias alias="CmmnClCode"		type="com.display.backoffice.bas.code.models.CmmnClCode" />
+		<typeAlias alias="CmmnDetailCode"		type="com.display.backoffice.bas.code.models.CmmnDetailCode" />
+		
+		
+		
 		<typeAlias alias="CenterInfo"		type="com.display.backoffice.bas.cnt.models.CenterInfo" />
 		<typeAlias alias="CenterInfoVO"		type="com.display.backoffice.bas.cnt.models.CenterInfoVO" />
 		
 		<package name="com.display.backoffice.uat.uia.models"/>	
 		<package name="com.display.backoffice.bas.cnt.models"/>	
 		<package name="com.display.backoffice.bas.cnt.models.dto"/>	
+		
+		<package name="com.display.backoffice.bas.menu.models"/>	
+		<package name="com.display.backoffice.bas.menu.models.dto"/>	
 		
 	</typeAliases>
     
