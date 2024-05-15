@@ -1,28 +1,38 @@
+spring:
+  profiles:
+    active: dev
+    group:
+      dev:
+        - dev
+        - common
+      prod:
+        - prod
+        - common
+      local:
+        - local
+        - common
+
+
+#################### common 공통 영역 ####################
+---
 server:
   port : 8082
   servlet: 
     context-path: /
     session:
       timeout : 3600
+
+spring:
+  config:
+    activate: 
+      on-profile: common
+
   # ipcc 에서 token 인증 설정 정보 
-  linkage:
+server.linkage:
     login_url : http://localhost:8080/api/backoffice/sys/system/systemLoginJWT.do
     token_key : e+/NF2VpTezMww9A5bvPQm1WzSGPBtyF+zQWFgLtCkU=
     system_name : DISP
-spring:
-  profiles: 
-    active: dev 
-  redis :
-    host: 59.14.245.89
-    port: 30004
-    password : Rowa230927!@
-    #6379
-  rabbitmq:
-    host: 59.14.245.89
-    port: 30003
-    username: admin
-    password: Rowa230927!@
-    #5672
+      
 rabbitmq:
   queue:
     name: display.queue
@@ -32,7 +42,31 @@ rabbitmq:
     key: ipcc.key
   topic :
     name : display_topic
-    key : display.manager.solved
+    key : display.manager.solved      
+
+springdoc:
+  packages-to-scan: com.colabear754.springdoc_example.controllers
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: /
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: alpha
+token:
+  expiration_time : 6000000
+  refresh_time : 86400000 #24*60*60*1000
+  secret : Q4NSl604sgyHJj1qwEkR3ycUeR4uUAt7WJraD7EN3O9DVM4yyYuHxMEbSF4XXyYJkal13eqgB0F7Bq4HQ4NSl604sgyHJj1qwEkR3ycUeR4uUAt7W
+page:
+  pageUnit : 10
+  pageSize : 10
+
+#################### 개발계 dev 영역 ####################
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
 Globals:
   OsType : WINDOWS
   LocalIp : 127.0.0.1
@@ -52,18 +86,99 @@ Globals:
     algoritm : egovframe
   IPCC:
     url : http://localhost:8080
-springdoc:
-  packages-to-scan: com.colabear754.springdoc_example.controllers
-  default-produces-media-type: application/json;charset=UTF-8
-  swagger-ui:
-    path: /
-    disable-swagger-default-url: true
-    display-request-duration: true
-    operations-sorter: alpha
-token:
-  expiration_time : 6000000
-  refresh_time : 86400000 #24*60*60*1000
-  secret : Q4NSl604sgyHJj1qwEkR3ycUeR4uUAt7WJraD7EN3O9DVM4yyYuHxMEbSF4XXyYJkal13eqgB0F7Bq4HQ4NSl604sgyHJj1qwEkR3ycUeR4uUAt7W
-page:
-  pageUnit : 10
-  pageSize : 10
+
+
+spring.redis :
+     host: 59.14.245.89
+     port: 30004
+     password : Rowa230927!@  
+
+    
+spring.rabbitmq:
+    host: 59.14.245.89
+    port: 30003
+    username: admin
+    password: Rowa230927!@
+
+
+#################### 실계 prod 영역 ####################
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+Globals:
+  OsType : WINDOWS
+  LocalIp : 127.0.0.1
+  DbType : mysql
+  mysql:
+    DriverClassName : net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    Url : jdbc:log4jdbc:mysql://192.168.22.179:20001/DB_DISPLAYINFO?useSSL=false&characterEncoding=utf8&allowPublicKeyRetrieval=true&serverTimezone=UTC&allowMultiQueries=true
+    UserName : root
+    Password : Qwer1234!@#$
+  fileUpload:
+    Extensions: .gif.jpg.jpeg.png.xls.xlsx
+  filePath : C:\\dev\\eGovFrameDev-4.1.0-64bit\\workspace\\IPCC\\IPCC\\backend_mo\\src\\main\\webapp\\upload
+  editorPath : C:\\dev\\eGovFrameDev-4.1.0-64bit\\workspace\\IPCC\\IPCC\\backend_mo\\src\\main\\webapp\\upload\\editor
+  Allow:
+    Origin: http://localhost:8082
+  crypto:
+    algoritm : egovframe
+  IPCC:
+    url : http://localhost:8080
+
+spring.redis :
+     host: 192.168.22.179
+     port: 30004
+     password : Rowa230927!@  
+
+    
+spring.rabbitmq:
+    host: 192.168.22.179
+    port: 30003
+    username: admin
+    password: Rowa230927!@
+
+
+#################### 본인 local 영역 ####################
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+Globals:
+  OsType : WINDOWS
+  LocalIp : 127.0.0.1
+  DbType : mysql
+  mysql:
+    DriverClassName : net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    Url : jdbc:log4jdbc:mysql://59.14.245.89:20001/DB_DISPLAYINFO?useSSL=false&characterEncoding=utf8&allowPublicKeyRetrieval=true&serverTimezone=UTC&allowMultiQueries=true
+    UserName : root
+    Password : Qwer1234!@#$
+  fileUpload:
+    Extensions: .gif.jpg.jpeg.png.xls.xlsx
+  filePath : C:\\dev\\eGovFrameDev-4.1.0-64bit\\workspace\\IPCC\\IPCC\\backend_mo\\src\\main\\webapp\\upload
+  editorPath : C:\\dev\\eGovFrameDev-4.1.0-64bit\\workspace\\IPCC\\IPCC\\backend_mo\\src\\main\\webapp\\upload\\editor
+  Allow:
+    Origin: http://localhost:8082
+  crypto:
+    algoritm : egovframe
+  IPCC:
+    url : http://localhost:8080
+
+spring.redis :
+     host: 59.14.245.89
+     port: 30004
+     password : Rowa230927!@  
+
+    
+spring.rabbitmq:
+    host: 59.14.245.89
+    port: 30003
+    username: admin
+    password: Rowa230927!@
+
+
+
