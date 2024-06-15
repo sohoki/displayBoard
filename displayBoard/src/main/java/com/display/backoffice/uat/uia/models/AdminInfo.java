@@ -21,7 +21,6 @@ public class AdminInfo implements Serializable {
 	private String updatePassword;
 	private String lockYn;
 	private String useYn;
-	private String mode;
 	private String empNo;
 	private String partId;
 	private int totalRecordCount;
@@ -42,15 +41,7 @@ public class AdminInfo implements Serializable {
 	private String systemcodeUsecode;
 	private String adminState;
 	
-	//private List<UserRoleInfo> roleInfo;
-	private List<UserAuthInfoDto> authInfo;
-	public List<UserAuthInfoDto> getAuthInfo() {
-		return authInfo;
-	}
-	public void setAuthInfo(List<UserAuthInfoDto> authInfo) {
-		this.authInfo = authInfo;
-	}
-	
+
     public String getSystemcodeUsecode() {
 		return systemcodeUsecode;
 	}
@@ -163,12 +154,6 @@ public class AdminInfo implements Serializable {
 	}
 	public void setEmpNo(String empNo) {
 		this.empNo = empNo;
-	}
-	public String getMode() {
-		return mode;
-	}
-	public void setMode(String mode) {
-		this.mode = mode;
 	}
 	public String getAdminId() {
 		return adminId;

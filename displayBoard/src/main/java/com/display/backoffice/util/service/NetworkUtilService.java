@@ -116,6 +116,7 @@ public class NetworkUtilService {
 			if (token != null && !token.equals("")) {
 				connection.setRequestProperty("Authorization", "Bearer "+ token);
 			}
+			log.info("token:" + token + ": " + reqUrl);
 			
 			if (method.equals("POST")) {
 				connection.setDoOutput(true);
@@ -128,6 +129,7 @@ public class NetworkUtilService {
 			
 			connection.connect();
 			log.info("connection.getResponseCode():" + connection.getResponseCode());
+			
 			if (connection.getResponseCode() == 200 ) {
 				
 				
@@ -159,15 +161,15 @@ public class NetworkUtilService {
 		}catch (MalformedURLException e) {
 			log.error("MalformedURLException error:" + e.toString());
 			result.put(Globals.HTTP_STATUS, Globals.STATUS_FAIL);
-        } catch (IOException e) {
-        	log.error("MalformedURLException error:" + e.toString());
+		} catch (IOException e) {
+			log.error("MalformedURLException error:" + e.toString());
 			result.put(Globals.HTTP_STATUS, Globals.STATUS_FAIL);
-        } catch (JSONException e) {
-        	log.error("not JSON Format response error:" + e.toString());
-        	e.printStackTrace();
-        }catch (Exception e) {
-        	result.put(Globals.HTTP_STATUS, Globals.STATUS_FAIL);
-        	log.error("NetworkUtilService:" + e.getStackTrace()[0].getLineNumber());
+		} catch (JSONException e) {
+			log.error("not JSON Format response error:" + e.toString());
+			e.printStackTrace();
+		}catch (Exception e) {
+			result.put(Globals.HTTP_STATUS, Globals.STATUS_FAIL);
+			log.error("NetworkUtilService:" + e.getStackTrace()[0].getLineNumber());
 			log.error("NetworkUtilService error:" + e.toString());
 		}finally{
 			if (br != null) br.close();

@@ -25,6 +25,7 @@ import com.display.backoffice.uat.role.models.dto.RoleInfoRequestDto;
 import com.display.backoffice.uat.role.models.dto.RoleInfoVO;
 import com.display.backoffice.uat.role.service.RoleInfoManageService;
 import com.display.backoffice.uat.uia.models.AdminInfoVO;
+import com.display.backoffice.uat.uia.models.ConsultantInfo;
 import com.display.backoffice.uat.uia.models.PartInfo;
 import com.display.backoffice.uat.uia.models.PartInfoVO;
 import com.display.backoffice.uat.uia.service.AdminInfoManageService;
@@ -167,31 +168,50 @@ public class MessageEventInfoService {
 				case "MANAGER" :
 					if (messageDto.getProcessGubun().equals(Globals.SAVE_MODE_LIST) && object.get(Globals.JSON_RETURN_RESULT) != null) {
 						ObjectMapper mapper = new ObjectMapper();
-						List<CmmnClCodeResDto> lcodeList = Arrays.asList(mapper.readValue(object.get(Globals.JSON_RETURN_RESULT).toString(), CmmnClCodeResDto[].class));
+						List<AdminInfoVO> lcodeList = Arrays.asList(mapper.readValue(object.get(Globals.JSON_RETURN_RESULT).toString(), AdminInfoVO[].class));
 						
+						for (AdminInfoVO info : lcodeList) {
+							AdminInfoVO vo = new AdminInfoVO();
+							vo.setMode(Globals.SAVE_MODE_INSERT);
+							vo.setAdminId(info.getAdminId());
+							vo.setAdminPassword(info.getAdminPassword());
+							vo.setPasswordCnsr(info.getPasswordCnsr());
+							vo.setPasswordHint(info.getPasswordHint());
+							vo.setAdminName(info.getAdminName());
+							vo.setAdminEmail(info.getAdminEmail());
+							vo.setUseYn(info.getUseYn());
+							vo.setPartId(info.getPartId());
+							vo.setInsttCode(info.getInsttCode());
+							vo.setAdminTel(info.getAdminTel());
+							vo.setUserId("SYSTEM");
+							vo.setRoleId(info.getRoleId());
+							vo.setEmpNo(UtilInfoService.NVLObj(info.getEmpNo(), ""));
+							vo.setAdminStatus(UtilInfoService.NVLObj(info.getAdminState(), ""));
+							vo.setPbxExtension(UtilInfoService.NVLObj(info.getPbxExtension(), ""));
+							vo.setConsultantUseyn(UtilInfoService.NVLObj(info.getConsultantUseyn(), ""));
+							userManagerService.updateAdminUserManage(vo);
+						}
 						
 					}else if (!messageDto.getProcessGubun().equals(Globals.SAVE_MODE_DELETE) && object.get(Globals.JSON_RETURN_RESULT) != null) {
+						ObjectMapper mapper = new ObjectMapper();
+						AdminInfoVO info = mapper.readValue(object.get(Globals.JSON_RETURN_RESULT).toString(), AdminInfoVO.class);
 						AdminInfoVO vo = new AdminInfoVO();
-						String mode = messageDto.getProcessGubun().equals("INSERT") ? "Ins" : "Edt";
-						vo.setMode(mode);
-						JSONObject userInfo = (JSONObject) object.get(Globals.JSON_RETURN_RESULT);
-						vo.setAdminId(userInfo.get("adminId").toString());
-						vo.setAdminPassword(userInfo.get("adminPassword").toString());
-						vo.setAdminName(userInfo.get("adminName").toString());
-						vo.setAdminEmail(userInfo.get("adminEmail").toString());
-						vo.setUseYn(userInfo.get("useYn").toString());
-						vo.setPartId(userInfo.get("partId").toString());
-						vo.setInsttCode(userInfo.get("insttCode").toString());
-						vo.setAdminTel(userInfo.get("adminTel").toString());
-						vo.setUserId("IPCC");
-						vo.setEmpNo(UtilInfoService.NVLObj(userInfo.get("empNo"), ""));
-						vo.setAdminStatus(UtilInfoService.NVLObj(userInfo.get("adminStatus"), ""));
-						vo.setPbxExtension(UtilInfoService.NVLObj(userInfo.get("pbxExtension"), ""));
-						vo.setConsultantUseyn(UtilInfoService.NVLObj(userInfo.get("consultantUseyn"), ""));
-						vo.setSystemcodeUsecode(UtilInfoService.NVLObj(userInfo.get("systemcodeUsecode"), ""));
-						JSONArray subobjs = (JSONArray) userInfo.get("authInfo");
+						vo.setAdminId(info.getAdminId());
+						vo.setAdminPassword(info.getAdminPassword());
+						vo.setAdminName(info.getAdminName());
+						vo.setAdminEmail(info.getAdminEmail());
+						vo.setUseYn(info.getUseYn());
+						vo.setPartId(info.getPartId());
+						vo.setInsttCode(info.getInsttCode());
+						vo.setAdminTel(info.getAdminTel());
+						vo.setUserId("SYSTEM");
+						vo.setRoleId(info.getRoleId());
+						vo.setEmpNo(UtilInfoService.NVLObj(info.getEmpNo(), ""));
+						vo.setAdminStatus(UtilInfoService.NVLObj(info.getAdminState(), ""));
+						vo.setPbxExtension(UtilInfoService.NVLObj(info.getPbxExtension(), ""));
+						vo.setConsultantUseyn(UtilInfoService.NVLObj(info.getConsultantUseyn(), ""));
+						userManagerService.updateAdminUserManage(vo);
 						
-						ret = userManagerService.updateAdminUserManage(vo);
 					}else {
 						 userManagerService.deleteAdminUserManage(messageDto.getId());
 					}
@@ -453,6 +473,22 @@ public class MessageEventInfoService {
 						roleService.updateRoleInfo(roleInfo);
 					}else {
 						
+						roleService.deleteRoleInfo(messageDto.getId());
+					}
+					break;
+				case "CONSULTANT" :
+					if (messageDto.getProcessGubun().equals(Globals.SAVE_MODE_LIST) && object.get(Globals.JSON_RETURN_RESULT) != null) {
+						ObjectMapper mapper = new ObjectMapper();
+						List<ConsultantInfo> partList = Arrays.asList(mapper.readValue(object.get(Globals.JSON_RETURN_RESULT).toString(), ConsultantInfo[].class));
+						for (ConsultantInfo info : partList) {
+							System.out.println(info.toString() );
+						}
+					}else if (!messageDto.getProcessGubun().equals(Globals.SAVE_MODE_DELETE)  && object.get(Globals.JSON_RETURN_RESULT) != null) {
+						ObjectMapper mapper = new ObjectMapper();
+						ConsultantInfo info = mapper.readValue(object.get(Globals.JSON_RETURN_RESULT).toString(), ConsultantInfo.class);
+						System.out.println(info.toString() );
+					}else {
+						//삭제 명령어 
 						roleService.deleteRoleInfo(messageDto.getId());
 					}
 					break;

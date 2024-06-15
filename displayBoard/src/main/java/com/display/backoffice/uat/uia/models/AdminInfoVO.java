@@ -1,21 +1,20 @@
 package com.display.backoffice.uat.uia.models;
 
 import java.io.Serializable;
+import java.util.List;
 
 
 public class AdminInfoVO extends AdminInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	/** 검색조건 */
-    private String searchCondition = "";    
+    private String searchCondition;
     /** 검색Keyword */
-    private String searchKeyword = "";    
-    /** 검색사용여부 */
-    private String searchUseYn = "";    
-    
-    private String mber_Sttus = "";
-    
+    private String searchKeyword;
+    private String searchUseYn;
+    private String mber_Sttus;
     private String userId;
+    private String mode;
     
     /** 현재페이지 */
     private int pageIndex = 1;    
@@ -33,44 +32,14 @@ public class AdminInfoVO extends AdminInfo implements Serializable {
     private String roleGubunTxt;
     private String adminStatusTxt;
     
-    
+    private List<UserAuthInfo> authInfo;
+	public List<UserAuthInfo> getAuthInfo() {
+		return authInfo;
+	}
+	public void setAuthInfo(List<UserAuthInfo> authInfo) {
+		this.authInfo = authInfo;
+	}
 	
-	public String getAdminStatusTxt() {
-		return adminStatusTxt;
-	}
-	public void setAdminStatusTxt(String adminStatusTxt) {
-		this.adminStatusTxt = adminStatusTxt;
-	}
-	public String getRoleGubunTxt() {
-		return roleGubunTxt;
-	}
-	public void setRoleGubunTxt(String roleGubunTxt) {
-		this.roleGubunTxt = roleGubunTxt;
-	}
-	public String getAllInsttNm() {
-		return allInsttNm;
-	}
-	public void setAllInsttNm(String allInsttNm) {
-		this.allInsttNm = allInsttNm;
-	}
-	public String getRoleName() {
-		return roleName;
-	}
-	public void setRoleName(String roleName) {
-		this.roleName = roleName;
-	}
-	public String getPartNm() {
-		return partNm;
-	}
-	public void setPartNm(String partNm) {
-		this.partNm = partNm;
-	}
-	public String getUserId() {
-		return userId;
-	}
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
 	public String getSearchCondition() {
 		return searchCondition;
 	}
@@ -94,6 +63,18 @@ public class AdminInfoVO extends AdminInfo implements Serializable {
 	}
 	public void setMber_Sttus(String mber_Sttus) {
 		this.mber_Sttus = mber_Sttus;
+	}
+	public String getUserId() {
+		return userId;
+	}
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+	public String getMode() {
+		return mode;
+	}
+	public void setMode(String mode) {
+		this.mode = mode;
 	}
 	public int getPageIndex() {
 		return pageIndex;
@@ -137,6 +118,36 @@ public class AdminInfoVO extends AdminInfo implements Serializable {
 	public void setIdCheck(String idCheck) {
 		this.idCheck = idCheck;
 	}
-	
-	
+	public String getRoleName() {
+		return roleName;
+	}
+	public void setRoleName(String roleName) {
+		this.roleName = roleName;
+	}
+	public String getPartNm() {
+		return partNm;
+	}
+	public void setPartNm(String partNm) {
+		this.partNm = partNm;
+	}
+	public String getAllInsttNm() {
+		return allInsttNm;
+	}
+	public void setAllInsttNm(String allInsttNm) {
+		this.allInsttNm = allInsttNm;
+	}
+	public String getRoleGubunTxt() {
+		return roleGubunTxt;
+	}
+	public void setRoleGubunTxt(String roleGubunTxt) {
+		this.roleGubunTxt = roleGubunTxt;
+	}
+	public String getAdminStatusTxt() {
+		return adminStatusTxt;
+	}
+	public void setAdminStatusTxt(String adminStatusTxt) {
+		this.adminStatusTxt = adminStatusTxt;
+	}
+    
+    
 }

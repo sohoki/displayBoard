@@ -21,6 +21,7 @@ import com.display.backoffice.uat.uia.mapper.AdminInfoManagerMapper;
 import com.display.backoffice.uat.uia.mapper.AdminStateChangeInfoManagerMapper;
 import com.display.backoffice.util.service.UtilInfoService;
 
+import egovframework.com.cmm.service.Globals;
 import egovframework.let.utl.sim.service.EgovFileScrty;
 import lombok.RequiredArgsConstructor;
 
@@ -52,52 +53,14 @@ public  class AdminInfoManageService {
 	public int updateAdminUserManage(AdminInfoVO vo) throws Exception {
 		// TODO Auto-generated method stub
 		
-		if (vo.getMode().equals("Ins")) {
+		if (vo.getMode().equals(Globals.SAVE_MODE_INSERT)) {
 			String enpassword = EgovFileScrty.encryptPassword(vo.getAdminPassword(), vo.getAdminId());
 			vo.setAdminPassword(enpassword);
-			
 		}
-		
-		
-		int ret = (vo.getMode().equals("Ins")) ? adminMapper.insertAdminUserManage(vo) : adminMapper.updateAdminUserManage(vo) ;
-		//기존 시스템 Auth 값
-		List<UserAuthInfoDto> userAuth =  adminMapper.selectSystemUserMenuInfo_s(vo.getAdminId());
-		
-		List<String> updtAuthList = new ArrayList<String>(Arrays.asList(vo.getSystemcodeUsecode().split("\\s*,\\s*")));
-		
-		System.out.println("updtAuthList.size()" + updtAuthList.size());
-		//auth 삭제
-		List<UserAuthInfoReqDto> delAuthList = userAuth.stream().filter(x -> !updtAuthList.contains(x.getSystemCode()))
-												.map( x -> new UserAuthInfoReqDto(vo.getAdminId(), x.getSystemCode(), null ))
-												.collect(Collectors.toList());
-		
-		ret = delAuthList.size() < 1 ? 1 : adminMapper.deleteUserAuthList(delAuthList);
-		//auth 입력
-		
-		
-		
-		//update 입력 추후 값 비교 해서 넣기 
-		//userAuth =  adminMapper.selectSystemUserMenuInfo_s(vo.getAdminId());
-		if (vo.getAuthInfo().size() > 0) {
-			
-			List<UserAuthInfoDto> insertRole = vo.getAuthInfo().stream()
-												.filter(x -> !updtAuthList.contains(x.getSystemCode()))
-												.map( x -> new UserAuthInfoDto(x.getSystemCode(), "", UtilInfoService.NVLObj(x.getAuthGubun(), ""), 
-		            		   					x.getUserId(), vo.getUserId(), UtilInfoService.NVLObj(x.getRoleId(), ""),
-		            		   						  "", "", "", "", "", UtilInfoService.NVLObj(x.getAuthDc(), "")))
-		               .collect(Collectors.toList());
-			ret = insertRole.size() < 1 ? 1 : adminMapper.insertSystemMenuInfo(insertRole);
-			
-			//
-			List<UserAuthInfoDto> updateRole = vo.getAuthInfo().stream()
-		               .filter(x -> updtAuthList.contains(x.getSystemCode()))
-		               .map( x -> new UserAuthInfoDto(x.getSystemCode(), "", UtilInfoService.NVLObj(x.getAuthGubun(), ""), 
-		            		   						  x.getUserId(), vo.getUserId(), UtilInfoService.NVLObj(x.getRoleId(), ""),
-		            		   						  "", "", "", "", "", UtilInfoService.NVLObj(x.getAuthDc(), "")))
-		               .collect(Collectors.toList());
-			ret = updateRole.size() < 1 ? 1 : adminMapper.updateSystemMenuInfo(updateRole);
+		if (vo.getMode().equals(Globals.SAVE_MODE_INSERT) && adminMapper.selectAdminUserMangerIDCheck(vo.getAdminId()) > 0) {
+			return -1;
 		}
-		
+		int ret = (vo.getMode().equals(Globals.SAVE_MODE_INSERT)) ? adminMapper.insertAdminUserManage(vo) : adminMapper.updateAdminUserManage(vo) ;
 		
 		return ret;
 	}
@@ -113,7 +76,6 @@ public  class AdminInfoManageService {
 			req.setSystemCode(userInfo.get().getSystemcodeUsecode());
 			req.setSearchCode(Arrays.asList(userInfo.get().getSystemcodeUsecode().split("\\s*,\\s*")));
 			
-			userInfo.orElseThrow().setAuthInfo(adminMapper.selectSystemUserMenuInfo(req));
 		}
 		return userInfo;
 	}

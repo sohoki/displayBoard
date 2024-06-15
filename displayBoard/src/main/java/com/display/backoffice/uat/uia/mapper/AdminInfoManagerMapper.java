@@ -38,10 +38,6 @@ public interface AdminInfoManagerMapper {
 	//추후 수정 예정
 	public int deleteSystemMenuInfo(String userId) throws Exception;
 	
-	public int deleteUserAuthList(List<UserAuthInfoReqDto> delAuthList) throws Exception;
-	
-	
-	public int insertSystemMenuInfo(List<UserAuthInfoDto> auths) throws Exception;
 	//추후 수정 예정 끝
 	public int selectAdminUserMangerIDCheck(String code) throws Exception;
 	
