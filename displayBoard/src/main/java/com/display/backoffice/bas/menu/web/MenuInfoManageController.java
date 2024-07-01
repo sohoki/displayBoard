@@ -168,14 +168,13 @@ public class MenuInfoManageController {
 			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
 		}else {
 			
+			log.info( jwtVerification.getTokenUserName(request));
 			
 			ModelAndView model = new ModelAndView (Globals.JSON_VIEW);
 			model.addObject(Globals.ADMIN_INFO, jwtVerification.getTokenUserName(request));
 			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 			model.addObject(Globals.JSON_RETURN_RESULT, 
-							menuService.selectMainMenuLeft(jwtVerification.getTokenUserName(request), 
-							request.getScheme()+"://" + request.getServerName()+":"+ request.getServerPort()));
-			
+							menuService.selectMainMenuLeft(jwtVerification.getTokenUserName(request)));
 			return model;
 		}
 		

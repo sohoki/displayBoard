@@ -9,6 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -44,41 +45,34 @@ public class SimpleCORSFilter implements Filter {
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
-		throws IOException, ServletException {
+			throws IOException, ServletException {
+			
+			HttpServletRequest request = (HttpServletRequest)req;
+			HttpServletResponse response = (HttpServletResponse)res;
 
-		log.debug("===>>> SimpleCORSFilter > doFilter()");
-		//HttpServletRequest request = (HttpServletRequest)req;
-		HttpServletResponse response = (HttpServletResponse)res;
+			String originHeader = EgovProperties.getProperty("Globals.Allow.Origin");
 
-		// Access-Control-Allow-Origin
-		//String origin = request.getHeader("Origin");
-		
-		//HTTP parameter directly written to HTTP header 
-		String originHeader = EgovProperties.getProperty("Globals.Allow.Origin");
-
-		log.debug("===>>> origin = " + originHeader);
-
-		if (originHeader != null && !originHeader.equals("")) {
-			originHeader = originHeader.replace("\r", "").replace("\n", "");// Security - Potential HTTP Response Splitting 분할응답 조치
+			log.debug("===>>> origin = " + originHeader);
+			
+			if (originHeader != null && !originHeader.equals("")) {
+				originHeader = originHeader.replace("\r", "").replace("\n", "");// Security - Potential HTTP Response Splitting 분할응답 조치
+			}
+			
+			response.setHeader("Access-Control-Allow-Origin", "*");
+		    response.setHeader("Access-Control-Allow-Credentials", "true");
+		    response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, OPTIONS");
+		    response.setHeader("Access-Control-Max-Age", "3600");
+		    response.setHeader("Access-Control-Allow-Headers", "access-control-allow-methods,access-control-allow-origin,ajax,authorization,refreshToken,content-type");
+		    if ("OPTIONS".equals(request.getMethod())) {
+		    	log.debug("===>>> option = " + request.getMethod());
+	            response.setStatus(HttpServletResponse.SC_OK);
+	        } else { 
+	        	log.debug("===>>> doFilter = " );
+	        	chain.doFilter(req, res);
+	        }
+		    
+			
 		}
-
-		response.setHeader("Access-Control-Allow-Origin", originHeader);
-
-		// Access-Control-Max-Age
-		response.setHeader("Access-Control-Max-Age", "3600");
-
-		// Access-Control-Allow-Credentials
-		response.setHeader("Access-Control-Allow-Credentials", "true");
-
-		// Access-Control-Allow-Methods
-		response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE");
-
-		// Access-Control-Allow-Headers
-		response.setHeader("Access-Control-Allow-Headers",
-			"Origin, X-Requested-With, Content-Type, Accept, Authorization, " + "X-CSRF-TOKEN");
-
-		chain.doFilter(req, res);
-	}
 
 	@Override
 	public void init(FilterConfig filterConfig) {}

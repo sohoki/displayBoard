@@ -82,6 +82,7 @@ public class EgovJwtTokenUtil implements Serializable{
     
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = getAllClaimsFromToken(token);
+        log.info("claims:" + claims);
         return claimsResolver.apply(claims);
     }
 	

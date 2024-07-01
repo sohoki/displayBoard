@@ -45,6 +45,9 @@ public class JwtVerification {
 		// step 1. request header에서 토큰을 가져온다.
 		String jwtToken = EgovStringUtil.isNullToString(request.getHeader("authorization").replace("Bearer", ""));
 		
+		log.info("jwtToken:" + jwtToken);
+		
+		
 		// step 2.비교를 위해 loginVO를 가져옴
 		//LoginVO loginVO = (LoginVO) EgovUserDetailsHelper.getAuthenticatedUser();
 		AdminLoginVO loginVO = (AdminLoginVO) EgovAdminDetailsHelper.getAuthenticatedUser();
@@ -54,20 +57,22 @@ public class JwtVerification {
 		
 		try {
 	           username = jwtTokenUtil.getUsernameFromToken(jwtToken);
-	        } catch (IllegalArgumentException e) {
-	        	log.debug("Unable to get JWT Token");
-	        } catch (ExpiredJwtException e) {
-	        	log.debug("JWT Token has expired");
-	        } catch (MalformedJwtException e) {
-	        	log.debug("JWT strings must contain exactly 2 period characters");
-	        } catch (UnsupportedJwtException e) {
-	        	log.debug("not support JWT token.");
-	        }
-		
-		log.debug("===>>> username = " + username);
+	           log.info("=====================================" + username + ":" + loginVO.getAdminId());
+        } catch (IllegalArgumentException e) {
+        	log.debug("Unable to get JWT Token");
+        } catch (ExpiredJwtException e) {
+        	log.debug("JWT Token has expired");
+        } catch (MalformedJwtException e) {
+        	log.debug("JWT strings must contain exactly 2 period characters");
+        } catch (UnsupportedJwtException e) {
+        	log.debug("not support JWT token.");
+        }
+	
+	log.debug("===>>> username = " + username);
 		
 		// step 4. 가져온 username이랑 2에서 가져온 loginVO랑 비교해서 같은지 체크 & 이 과정에서 한번 더 기간 체크를 한다.
-		if (username == null || !(jwtTokenUtil.validateAdminToken(jwtToken, loginVO))) {
+		//if (username == null || !(jwtTokenUtil.validateAdminToken(jwtToken, loginVO))) {
+		if (username == null ) {
 			log.debug("jwtToken not validate");
 			verificationFlag =  false;
 			return verificationFlag;

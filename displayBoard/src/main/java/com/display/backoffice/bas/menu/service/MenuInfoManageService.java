@@ -139,8 +139,8 @@ public class MenuInfoManageService {
 		return menuMapper.selectMainMenuHead(empNo);
 	}
 	@Cacheable(key="#empNo", value="findLeftMenu")
-	public List<Map<String, Object>> selectMainMenuLeft(String empNo, String url) throws Exception {
-		return menuMapper.selectMainMenuLeft(empNo, url);
+	public List<Map<String, Object>> selectMainMenuLeft(String empNo) throws Exception {
+		return menuMapper.selectMainMenuLeft(empNo);
 	}
 
 	/**
