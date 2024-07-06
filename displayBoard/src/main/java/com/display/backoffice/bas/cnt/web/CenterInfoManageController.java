@@ -83,24 +83,30 @@ public class CenterInfoManageController {
 	public ModelAndView selectCenterInfoManageListByPagination(@RequestBody Map<String, Object> searchMap, 
 																HttpServletRequest request, 
 																BindingResult bindingResult) throws Exception {
+
 		
 		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		try {
 			
 			if (!jwtVerification.isVerification(request)) {
         		ResultVO resultVO = new ResultVO();
+        		log.info("9999999999999999999999999999999999======================================================");
     			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+    			
         	}else {
         		//여기 부분 수정 
         		String[] userInfo = jwtVerification.getTokenUserInfo(request);
+        		log.info("===============userInfo[3] : "+userInfo[3]+"===============");
         		searchMap.put("roleId", userInfo[2]);
         		searchMap.put("partId", userInfo[3]);
         	}
 			
+			log.info("787877777777777====="+searchMap);
+			
 			int pageUnit = searchMap.get(Globals.PAGE_UNIT) == null ?   pageUnitSetting : Integer.valueOf((String) searchMap.get(Globals.PAGE_UNIT));
     		int pageSize = searchMap.get(Globals.PAGE_SIZE) == null ?   pageSizeSetting : Integer.valueOf((String) searchMap.get(Globals.PAGE_SIZE));  
     	   
-    		
+    		log.info("pageUnit : "+pageUnit+ "   pageSize : "+pageSize);
     	    
         	/** pageing */
     		PaginationInfo paginationInfo = new PaginationInfo();
@@ -210,6 +216,7 @@ public class CenterInfoManageController {
 	    		ResultVO resultVO = new ResultVO();
 				return jwtVerification.handleAuthError(resultVO); // 토큰 확
 	    	}
+			log.info("=====centerId :"+centerId);
 			int ret = centerService.deleteCenterInfoManage(centerId);
 			if (ret > 0) {
         		model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);

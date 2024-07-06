@@ -29,30 +29,30 @@
 							</otherwise>
 						</choose>
 				</if>		
-				<if test="params.adminLevel != 'ROLE_ADMIN'">
-				   and a.PART_ID IN (
-				         SELECT part_id 
-				         FROM TB_PARTINFO 
-				         WHERE PART_ID = #{partId}
-						 UNION ALL
-						 SELECT  hi.part_id
-								 FROM ( 
-								     SELECT fn_hierarchy(part_id) AS partId, @level AS level 
-								     FROM ( 
-								            SELECT @start_with := #{partId}, 
-								                   @partId := @start_with, 
-								                   @level := 0 
-								          ) vars, tb_partinfo 
-								     WHERE @partId IS NOT NULL 
-								     ) ho 
-								JOIN TB_PARTINFO hi 
-								ON hi.part_id = ho.partId
-				   ) 
-				</if>      		     
+<!-- 				<if test="params.adminLevel != 'ROLE_ADMIN'"> -->
+<!-- 				   and a.PART_ID IN ( -->
+<!-- 				         SELECT part_id  -->
+<!-- 				         FROM TB_PARTINFO  -->
+<!-- 				         WHERE PART_ID = #{params.partId} -->
+<!-- 						 UNION ALL -->
+<!-- 						 SELECT  hi.part_id -->
+<!-- 								 FROM (  -->
+<!-- 								     SELECT fn_hierarchy(part_id) AS partId, @level AS level  -->
+<!-- 								     FROM (  -->
+<!-- 								            SELECT @start_with := #{params.partId},  -->
+<!-- 								                   @partId := @start_with,  -->
+<!-- 								                   @level := 0  -->
+<!-- 								          ) vars, TB_PARTINFO  -->
+<!-- 								     WHERE @partId IS NOT NULL  -->
+<!-- 								     ) ho  -->
+<!-- 								JOIN TB_PARTINFO hi  -->
+<!-- 								ON hi.part_id = ho.partId -->
+<!-- 				   )  -->
+<!-- 				</if>      		      -->
 		        ORDER BY a.CENTER_ID  DESC
 	        ) TB  
 	         ORDER BY TB.centerId  DESC
-	        limit   #{firstIndex},   #{recordCountPerPage}  		 	    
+	        limit   #{params.firstIndex},   #{params.recordCountPerPage}  		 	    
      </select>
     <select id="selectCenterInfoManageCombo"       resultType="CenterInfoVO">
        SELECT  CENTER_ID as centerId, CENTER_NM as centerNm
@@ -122,4 +122,9 @@
    	                               FILE_HEIGHT =  #{fileHeight,jdbcType=VARCHAR} 
    	    WHERE ATCH_FILE_ID = #{atchFileId}
    	</update>
+   	
+   	<delete id="deleteCenterInfoManage">
+		DELETE FROM TB_CENTERINFO
+		WHERE  CENTER_ID = #{centerId}
+	</delete>
 </mapper>

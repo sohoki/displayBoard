@@ -170,11 +170,13 @@ public class MenuInfoManageController {
 			
 			log.info( jwtVerification.getTokenUserName(request));
 			
+			
 			ModelAndView model = new ModelAndView (Globals.JSON_VIEW);
 			model.addObject(Globals.ADMIN_INFO, jwtVerification.getTokenUserName(request));
 			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 			model.addObject(Globals.JSON_RETURN_RESULT, 
 							menuService.selectMainMenuLeft(jwtVerification.getTokenUserName(request)));
+			System.out.println();
 			return model;
 		}
 		

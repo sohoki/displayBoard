@@ -103,22 +103,14 @@ public class EgovJwtTokenUtil implements Serializable{
         Map<String, Object> claims = new HashMap<>();
         return doGenerateToken(claims, loginVO.getUserSe()+loginVO.getId());
     }
-    //generate token for admin
-    public String generateAdminToken(AdminLoginVO loginVO) {
-        Map<String, Object> claims = new HashMap<>();
-        //추후 변경 예정 
-        claims.put("partId" , loginVO.getPartId());
-        claims.put("roleGubun" , loginVO.getRoleGubun());
-        claims.put("secret" , loginVO.getRoleId());
-        //권한 체크 
-        /*
-        for (UserRoleInfo info : loginVO.getRoleInfo()) {
-        	//claims.put(Globals.TOKEN_CLAIM_NAME , info.getRoleId());
-        	claims.put(secret , info.getRoleId());
-        }
-        */
-        return doGenerateToken(claims, loginVO.getAdminName()+"|"+loginVO.getAdminId());
-    }
+  //generate token for admin
+  	public String generateAdminToken(AdminLoginVO loginVO) {
+  		Map<String, Object> claims = new HashMap<>();
+  		claims.put("roleId" , loginVO.getRoleId());
+  		claims.put("partId" , loginVO.getPartId());
+  		claims.put("insttCode" , loginVO.getInsttCode());
+  		return doGenerateToken(claims, loginVO.getAdminName()+"|"+loginVO.getAdminId()+"|"+loginVO.getRoleId()+"|"+loginVO.getPartId()+"|"+loginVO.getInsttCode());
+  	}
 
     public String generateToken(LoginVO loginVO, Map<String, Object> claims) {
         return doGenerateToken(claims, loginVO.getUserSe()+loginVO.getId());

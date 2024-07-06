@@ -30,11 +30,13 @@ public class CenterInfoVO extends CenterInfo implements Serializable {
     private int firstIndex = 1;
     private int lastIndex = 1;    
     private int recordCountPerPage = 10;
+    private String partNm;
     private String allInsttNm;
     private String centerFloorTxt;
     private String centerFloorEndTxt;
     private String centerAgentCnt;
     private String totalRecordCount;
+    private String partId;
     private String adminLevel;
     
     

@@ -31,6 +31,7 @@ public class CenterInfoService {
 	
 	public List<CenterInfoVO> selectCenterInfoPageInfoManageListByPagination(Map<String, Object> searchVO) throws Exception {
 		// TODO Auto-generated method stub
+		log.info("searchVO" + searchVO);
 		return centerMapper.selectCenterInfoManageListByPagination(searchVO);
 	}
 
