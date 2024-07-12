@@ -41,7 +41,7 @@
 		SELECT 
 			A.CODE AS code, A.CODE_NM AS codeNm
 		FROM COMTCCMMNDETAILCODE A		    
-		WHERE A.CODE_ID = #{code} AND A.SYSTEM_CODE = #{systemCode}
+		WHERE A.CODE_ID = #{code}
 		      AND USE_AT = 'Y'
 	</select>
 	<!--  2021-11-11 수정 -->
