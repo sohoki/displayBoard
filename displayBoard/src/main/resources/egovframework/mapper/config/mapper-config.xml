@@ -40,6 +40,9 @@
 		<typeAlias alias="SchduleInfoVO"			type="com.display.backoffice.sts.sch.models.SchduleInfoVO" />
 		<typeAlias alias="SchduleInfo"			type="com.display.backoffice.sts.sch.models.SchduleInfo" />
 		
+		<typeAlias alias="AgentInfoVO"			type="com.display.backoffice.sym.agent.models.AgentInfoVO" />
+		<typeAlias alias="AgentInfo"			type="com.display.backoffice.sym.agent.models.AgentInfo" />
+		
 		<!--  전문 관련 models 
 		<typeAlias alias="SendMsgInfoVO"		type="com.display.backoffice.sts.xml.models.SendMsgInfoVO" />
 		<typeAlias alias="SendMsgInfo"		type="com.display.backoffice.sts.xml.models.SendMsgInfo" />

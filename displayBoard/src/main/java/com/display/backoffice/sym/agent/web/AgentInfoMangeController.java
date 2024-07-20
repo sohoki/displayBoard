@@ -335,7 +335,7 @@ public class AgentInfoMangeController {
 	        	searchVO.setAdminLevel(userInfo[2]);
 			    searchVO.setPartId(userInfo[3]);
 	        }
-			searchVO.setRecordCountPerPage(propertiesService.getInt("AgentPageSize"));   
+//			searchVO.setRecordCountPerPage(propertiesService.getInt("AgentPageSize"));   
 			//searchVO.setPageIndex(0);
 			
 			model = agentService.selectAgentPageInfoManageListByPagination(searchVO);
@@ -344,12 +344,12 @@ public class AgentInfoMangeController {
 			model.setViewName(Globals.JSON_VIEW);
 			
 		}catch(NullPointerException e){
-			log.error("deleteEqupInfoManage  error: "  + e.toString());
-			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.delete"));	
+			log.error("selectAgentCenterInfoList  error: "  + e.toString());
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));	
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 		}catch(Exception e){
-			log.error("deleteEqupInfoManage  error: "  + e.toString());
-			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.delete"));	
+			log.error("selectAgentCenterInfoList  error: "  + e.toString());
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.select"));	
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
 		}
 		return model;
