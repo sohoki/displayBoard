@@ -252,6 +252,7 @@ public class CenterInfoManageController {
 	    		info.setUserId(jwtVerification.getTokenUserName(request));
 	    	}
 			
+			log.info("ss info : "+info.getAdminApprovalYn());
 			
 			String meesage = "";
 			model.addObject(Globals.STATUS_REGINFO, info);

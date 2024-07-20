@@ -37,6 +37,9 @@
 		<typeAlias alias="RoleInfo"	         type="com.display.backoffice.uat.role.models.RoleInfo" />
 		<typeAlias alias="RoleInfoRequestDto"  type="com.display.backoffice.uat.role.models.dto.RoleInfoRequestDto" />
 		
+		<typeAlias alias="SchduleInfoVO"			type="com.display.backoffice.sts.sch.models.SchduleInfoVO" />
+		<typeAlias alias="SchduleInfo"			type="com.display.backoffice.sts.sch.models.SchduleInfo" />
+		
 		<!--  전문 관련 models 
 		<typeAlias alias="SendMsgInfoVO"		type="com.display.backoffice.sts.xml.models.SendMsgInfoVO" />
 		<typeAlias alias="SendMsgInfo"		type="com.display.backoffice.sts.xml.models.SendMsgInfo" />

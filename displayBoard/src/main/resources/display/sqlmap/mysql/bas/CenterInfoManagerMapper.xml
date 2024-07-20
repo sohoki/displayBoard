@@ -11,6 +11,10 @@
 		        a.CENTER_ZIPCODE     as "centerZipcode",
                 a.CENTER_ADDR1       as "centerAddr1",
                 a.CENTER_ADDR2       as "centerAddr2",
+                a.PART_ID       	 as "partId",
+                a.CENTER_TEL       as "centerTel",
+                a.CENTER_FAX       as "centerFax",
+                a.CENTER_URL       as "centerUrl",
 		        a.CENTER_USE_YN       as "centerUseYn"		,      	
 		        a.ADMIN_APPROVAL_YN       as "adminApprovalYn" ,	        
 		        a.CENTER_REGDATE as "centerRegdate"	,
@@ -69,8 +73,8 @@
 				   REST_INFO as restInfo, MEETINGROOM_INFO as meetingrooInfo, CENTER_INFO as       centerInfo,
 				   SUBSTR(CENTER_ZIPCODE,1,3) AS centerZipcode1, SUBSTR(CENTER_ZIPCODE,4,6) AS centerZipcode2 ,     
 				   ADMIN_APPROVAL_YN adminApprovalYn, 
-				   a.PART_ID, CENTER_FLOOR, CENTER_FLOOR_END,
-				   fn_DetailCodeNm(CENTER_FLOOR) centerFloorTxt, fn_DetailCodeNm(CENTER_FLOOR_END) centerFloorEndTxt, 
+				   a.PART_ID, CENTER_FLOOR, CENTER_FLOOR_END, a.FlOOR_INFO,
+				   fn_DetailCodeNm2(CENTER_FLOOR) centerFloorTxt, fn_DetailCodeNm2(CENTER_FLOOR_END) centerFloorEndTxt, 
 				   b.PART_NM 
 		    FROM TB_CENTERINFO a, TB_PARTINFO b 
 		    WHERE a.part_id = b.part_id     and CENTER_ID = #{centerId}		  
@@ -80,13 +84,13 @@
              INSERT INTO TB_CENTERINFO (CENTER_ID, CENTER_NM, CENTER_ZIPCODE, CENTER_ADDR1, CENTER_ADDR2, CENTER_TEL,CENTER_FAX, 
                                  CENTER_REG_ID, CENTER_REGDATE, CENTER_UPDATE_USER_ID, CENTER_UPDATE_DATE, CENTER_IMG, CENTER_URL, 
                                  CENTER_SEAT_IMG, CENTER_USE_YN, REST_INFO, MEETINGROOM_INFO, CENTER_INFO, ADMIN_APPROVAL_YN,
-                                 part_id, CENTER_FLOOR, CENTER_FLOOR_END 
+                                 part_id, CENTER_FLOOR, CENTER_FLOOR_END, FlOOR_INFO
                                  )
              VALUES (FN_CENTERID(), #{centerNm},    #{centerZipcode ,jdbcType=VARCHAR}, #{centerAddr1 ,jdbcType=VARCHAR}, #{centerAddr2 ,jdbcType=VARCHAR}, 
              #{centerTel,jdbcType=VARCHAR},  #{centerFax,jdbcType=VARCHAR},
-             #{centerUpdateId,jdbcType=VARCHAR}, now(), #{centerUpdateId,jdbcType=VARCHAR}, now(),  #{centerImg,jdbcType=VARCHAR}, #{centerUrl ,jdbcType=VARCHAR}, 
+             #{userId,jdbcType=VARCHAR}, now(), #{userId,jdbcType=VARCHAR}, now(),  #{centerImg,jdbcType=VARCHAR}, #{centerUrl ,jdbcType=VARCHAR}, 
              #{centerSeatImg,jdbcType=VARCHAR}, #{centerUseYn,jdbcType=VARCHAR}, #{restInfo,jdbcType=VARCHAR}, #{meetingroomInfo,jdbcType=VARCHAR},  #{centerInfo,jdbcType=VARCHAR} , 
-             #{adminApprovalYn, jdbcType=VARCHAR}, #{partId, jdbcType=VARCHAR}, #{centerFloor, jdbcType=VARCHAR}, #{centerFloorEnd, jdbcType=VARCHAR} 
+             #{adminApprovalYn, jdbcType=VARCHAR}, #{partId, jdbcType=VARCHAR}, #{centerFloor, jdbcType=VARCHAR}, #{centerFloorEnd, jdbcType=VARCHAR} , #{floorInfo, jdbcType=VARCHAR} 
              )
          ]]>
      </insert>
@@ -97,7 +101,7 @@
 	                                 CENTER_ADDR2 = #{centerAddr2} ,
 	                                 CENTER_TEL = #{centerTel,jdbcType=VARCHAR} ,
 	                                 CENTER_FAX = #{centerFax,jdbcType=VARCHAR} ,
-	                                 CENTER_UPDATE_USER_ID =#{centerUpdateId,jdbcType=VARCHAR} ,
+	                                 CENTER_UPDATE_USER_ID = #{userId,jdbcType=VARCHAR},
 	                                 CENTER_UPDATE_DATE = now() ,
 	                                 CENTER_URL = #{centerUrl ,jdbcType=VARCHAR} ,
 	                                 CENTER_USE_YN = #{centerUseYn,jdbcType=VARCHAR} ,
@@ -114,6 +118,7 @@
 	                                 , part_id = #{partId}
 	                                 , CENTER_FLOOR = #{centerFloor, jdbcType=VARCHAR}
 	                                 , CENTER_FLOOR_END = #{centerFloorEnd, jdbcType=VARCHAR} 
+	                                 , FlOOR_INFO = #{floorInfo, jdbcType=VARCHAR}
 	      WHERE CENTER_ID = #{centerId}
      </update>
         <update id="updateFileDetailInfo">
