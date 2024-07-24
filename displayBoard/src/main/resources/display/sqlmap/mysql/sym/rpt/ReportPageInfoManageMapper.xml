@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.display.backoffice.sts.report.mapper.ReportPageInfoManageMapper">
+
+    <select id="selectReportPageInfoManageListByPagination" resultType="ReportPageInfoVO">     	      
+		 	SELECT SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT,
+		 	       TB.* FROM (
+						    SELECT a.REPORT_SEQ, a.REPORT_TITLE, a.REPORT_DC, 
+						           case a.REPORT_GUBUN 
+						                  when 'reportGubun_3'  then  CONCAT(replace(a.REPORT_URL, #{replacePath}, '') , a.REPORT_DC)
+						                  when 'reportGubun_4'  then  CONCAT(replace(a.REPORT_URL, #{replacePath}, '') , a.REPORT_PREVIEW)
+						                else a.REPORT_URL
+						           end REPORT_URL,
+						           case a.REPORT_GUBUN 
+						                  when 'reportGubun_3'  then  CONCAT(replace(a.REPORT_URL, #{replacePath}, '') , a.REPORT_DC)
+						                  when 'reportGubun_4'  then  CONCAT(replace(a.REPORT_URL, #{replacePath}, '') , a.REPORT_DC)
+						                else a.REPORT_URL
+						           end REPORT_URL_REAL, 
+						           a.REPORT_GUBUN, a.REPORT_UESYN reportUseYn, a.FRST_REGIST_PNTTM, a.FRST_REGISTER_ID, 
+						           case a.REPORT_GUBUN 
+						                when 'reportGubun_3'   then  
+							             (SELECT CONCAT(ATCH_FILE_ID, ',',IFNULL(FILE_WIDTH, ''), ',', ifnull(FILE_HEIGHT, ''), ',', ifnull(PLAY_TIME, '')) 
+							              FROM LETTNFILEDETAIL b 
+							              WHERE b.STRE_FILE_NM  = a.REPORT_DC)
+							            when 'reportGubun_4'   then  
+							             (SELECT CONCAT(ATCH_FILE_ID, ',',ifnull(FILE_WIDTH, ''), ',', ifnull(FILE_HEIGHT, ''), ',', ifnull(PLAY_TIME, '')) 
+							             FROM LETTNFILEDETAIL b 
+							             WHERE b.STRE_FILE_NM  = a.REPORT_DC)
+							       ELSE
+							          REPORT_PREVIEW
+							       end  REPORT_PREVIEW
+							FROM TB_REPORTINFO a
+							WHERE 1=1
+		        <if test="searchKeyword != ''">
+						<choose>
+							<when test="searchCondition == 'reportDC'">
+								 and a.REPORT_DC LIKE CONCAT('%',#{searchKeyword},'%')
+							</when>
+							<otherwise>
+								and a.REPORT_TITLE LIKE CONCAT('%',#{searchKeyword},'%') 
+							</otherwise>
+						</choose>
+				</if>		   
+				<if test="reportUseYn != '' and reportUseYn != null">
+				     and REPORT_UESYN = #{reportUseYn}
+				</if>     
+				<if test="searchReportGubun != null">
+				       and REPORT_GUBUN IN 
+				      <foreach collection="searchReportGubun" item="item" index="index" open="(" separator="," close=")">
+				      #{item}
+				     </foreach>
+				</if>
+				ORDER BY a.REPORT_SEQ  DESC
+	        ) TB 
+	        ORDER BY TB.REPORT_SEQ  DESC
+	        limit  #{firstIndex} , #{recordCountPerPage}         		 	    
+   </select>
+      
+   <select id="selectReportPageInfoManageDetail" resultType="ReportPageInfoVO">
+     select a.REPORT_SEQ, a.REPORT_TITLE, a.REPORT_DC, a.REPORT_URL, a.REPORT_GUBUN,
+			a.REPORT_UESYN reportUseYn, a.FRST_REGIST_PNTTM, a.FRST_REGISTER_ID ,
+			a.LAST_UPDT_PNTTM, a.LAST_UPDUSR_ID, REPORT_PREVIEW
+     from TB_REPORTINFO a
+     where a.REPORT_SEQ = #{reportSeq}
+   </select>
+   <select id="selectReportPageInfoManageView" resultType="ReportPageInfoVO">
+     select a.REPORT_SEQ, a.REPORT_TITLE, a.REPORT_DC, a.REPORT_URL, fn_DetailCodeNm(a.REPORT_GUBUN) as reportGubun,
+			a.REPORT_UESYN reportUseYn, a.FRST_REGIST_PNTTM, a.FRST_REGISTER_ID ,
+			a.LAST_UPDT_PNTTM, a.LAST_UPDUSR_ID
+     from TB_REPORTINFO a    
+     where REPORT_SEQ = #{reportSeq}
+   </select>
+   <select id="selectReportMax" resultType="java.lang.String">
+      SELECT MAX(REPORT_SEQ)
+      FROM TB_REPORTINFO a  
+   </select>
+   <select id="selectReportPalyTime"  resultType="java.lang.Integer">
+		SELECT CASE  a.REPORT_GUBUN WHEN 'reportGubun_3' THEN 
+		             (SELECT IFNULL(PLAY_TIME, 1)
+		              FROM LETTNFILEDETAIL b 
+		              WHERE b.REPORT_SEQ = a.REPORT_SEQ)
+		       ELSE '1' 
+		       END AS  PLAY_TIME  
+		FROM TB_REPORTINFO a 
+		WHERE a.REPORT_SEQ = #{reportSeq}
+   </select>
+   <select id="selectReportPageInfoManageListTotCnt_S" resultType="java.lang.Integer">
+        SELECT  IFNULL(count(*),0)      
+	    FROM TB_REPORTINFO a
+	    WHERE  1=1
+	       <if test="searchKeyword != ''">
+						<choose>
+							<when test="searchCondition == 'reportTitle'">
+								and a.REPORT_TITLE LIKE CONCAT('%',#{searchKeyword},'%') 
+							</when>
+							<otherwise>
+								and a.REPORT_DC LIKE CONCAT('%',#{searchKeyword},'%')  
+							</otherwise>
+						</choose>
+			</if>	
+			<if test="reportUseYn != ''">
+				   and REPORT_UESYN = #{reportUseYn}
+		    </if>				    	     
+   </select>
+   
+   
+   <insert id="insertReportPageInfoManage">
+      INSERT INTO TB_REPORTINFO( REPORT_TITLE, REPORT_DC, REPORT_URL, REPORT_GUBUN, 
+                                 REPORT_UESYN, FRST_REGIST_PNTTM, FRST_REGISTER_ID, LAST_UPDT_PNTTM, LAST_UPDUSR_ID)
+      VALUES (#{reportTitle, jdbcType=VARCHAR}, #{reportDc,jdbcType=VARCHAR}, #{reportUrl}, #{reportGubun,jdbcType=VARCHAR }
+              , #{reportUseYn,jdbcType=VARCHAR },  now(), #{userId,jdbcType=VARCHAR},  now() , #{userId,jdbcType=VARCHAR});
+              
+      INSERT INTO LETTNFILEDETAIL(ATCH_FILE_ID, FILE_STRE_COURS, STRE_FILE_NM, ORIGNL_FILE_NM, FILE_EXTSN, FILE_SIZE, 
+         						 FILE_THUMNAIL, PLAY_TIME, FRST_REGISTER_ID, FRST_REGIST_PNTTM, REPORT_SEQ)
+      VALUES ( #{atchFileId} , #{reportUrl}, #{reportDc,jdbcType=VARCHAR}, #{reportTitle, jdbcType=VARCHAR}, 'url'  , 0, 
+         ''   , '1', #{userId,jdbcType=VARCHAR},  now(),
+         (SELECT max(REPORT_SEQ) FROM TB_REPORTINFO)
+         )
+   </insert>
+   <update id="updateReportPageInfoManage">
+      UPDATE TB_REPORTINFO SET REPORT_TITLE = #{reportTitle}
+                             ,  REPORT_DC = #{reportDc,jdbcType=VARCHAR }
+                             ,  REPORT_URL = #{reportUrl,jdbcType=VARCHAR }
+                             ,  REPORT_GUBUN = #{reportGubun}
+                             ,  REPORT_UESYN =  #{reportUseYn,jdbcType=VARCHAR }
+                             ,  LAST_UPDT_PNTTM =  now()
+                             ,  LAST_UPDUSR_ID = #{userId,jdbcType=VARCHAR}
+      WHERE REPORT_SEQ = #{reportSeq}
+   </update>
+   <update id="updateReportPreviewInfoManage">
+      UPDATE TB_REPORTINFO SET REPORT_PREVIEW = #{reportPreview}
+      WHERE REPORT_SEQ = #{reportSeq}
+   </update>
+   
+   
+   <delete id="deleteReportPageInfoManage">
+      DELETE FROM TB_REPORTINFO
+      WHERE REPORT_SEQ = #{reportSeq}   
+   </delete>
+
+</mapper>

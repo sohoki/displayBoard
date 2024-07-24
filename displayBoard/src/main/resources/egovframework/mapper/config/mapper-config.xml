@@ -43,13 +43,16 @@
 		<typeAlias alias="AgentInfoVO"			type="com.display.backoffice.sym.agent.models.AgentInfoVO" />
 		<typeAlias alias="AgentInfo"			type="com.display.backoffice.sym.agent.models.AgentInfo" />
 		
+		<typeAlias alias="ReportPageInfoVO"			type="com.display.backoffice.sts.report.models.ReportPageInfoVO" />
+		<typeAlias alias="ReportPageInfo"			type="com.display.backoffice.sts.report.models.ReportPageInfo" />
+		
+		
+		
 		<!--  전문 관련 models 
 		<typeAlias alias="SendMsgInfoVO"		type="com.display.backoffice.sts.xml.models.SendMsgInfoVO" />
 		<typeAlias alias="SendMsgInfo"		type="com.display.backoffice.sts.xml.models.SendMsgInfo" />
 		<typeAlias alias="XmlInfo"		type="com.display.backoffice.sts.xml.models.XmlInfo" />
 		<typeAlias alias="XmlInfoVO"		type="com.display.backoffice.sts.xml.models.XmlInfoVO" />
-		
-		
 		
 		-->
 		
