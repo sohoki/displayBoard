@@ -51,6 +51,12 @@
 		
 		<typeAlias alias="AuthorInfo"			type="com.display.backoffice.sym.rnt.models.AuthorInfo" />
 		
+		<typeAlias alias="ContentScheduleInfoVO"			type="com.display.backoffice.sts.sch.models.ContentScheduleInfoVO" />
+		<typeAlias alias="ContentScheduleInfo"			type="com.display.backoffice.sts.sch.models.ContentScheduleInfo" />
+		
+		<typeAlias alias="XmlInfoVO"			type="com.display.backoffice.sts.xml.models.XmlInfoVO" />
+		<typeAlias alias="XmlInfo"			type="com.display.backoffice.sts.xml.models.XmlInfo" />
+		
 		
 		
 		<!--  전문 관련 models 

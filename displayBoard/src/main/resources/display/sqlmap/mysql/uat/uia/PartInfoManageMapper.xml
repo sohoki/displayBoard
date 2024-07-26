@@ -81,9 +81,9 @@
 						</otherwise>
 					</choose>
 				</if>
-<!-- 			<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchInsttCode)"> -->
-<!-- 				AND INSTT_CODE = #{params.searchInsttCode} -->
-<!-- 			</if> -->
+			<if test="!@org.apache.commons.lang3.StringUtils@isEmpty(params.searchInsttCode)">
+				AND INSTT_CODE = #{params.searchInsttCode}
+			</if>
 		)X LEFT JOIN  COMTNINSTTCODE B
 		ON X.INSTT_CODE = B.INSTT_CODE	
 		ORDER BY path , PART_ORDER ASC  	    

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.display.backoffice.uat.uia.mapper.AdminInfoManagerMapper">
 
-   <select id="selectAdminUserManageListByPagination" resultType="camelmap">     	      
+   <select id="selectAdminUserManageListByPagination" resultType="AdminInfoVO">     	      
 		SELECT SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT,
 			   TB.* FROM (
 			   SELECT
@@ -25,7 +25,8 @@
 					a.ROLE_GUBUN, fn_DetailCodeNm(a.ROLE_GUBUN) ROLE_GUBUN_TXT,
 					CASE a.ROLE_GUBUN WHEN 'AUTH_GUBUN_1' THEN (SELECT ROLE_NAME FROM TB_ROLEINFO B WHERE a.ROLE_ID = B.ROLE_ID)
 							ELSE '개인 설정'
-					END AS ROLE_NAME, SYSTEMCODE_USECODE
+					END AS ROLE_NAME
+<!-- 					, SYSTEMCODE_USECODE -->
 				FROM   TB_MANAGERINFO a, TB_PARTINFO c, COMTNINSTTCODE d
 				WHERE  1=1  
 						AND a.PART_ID = c.PART_ID
