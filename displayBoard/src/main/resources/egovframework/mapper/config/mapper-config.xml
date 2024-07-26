@@ -46,6 +46,11 @@
 		<typeAlias alias="ReportPageInfoVO"			type="com.display.backoffice.sts.report.models.ReportPageInfoVO" />
 		<typeAlias alias="ReportPageInfo"			type="com.display.backoffice.sts.report.models.ReportPageInfo" />
 		
+		<typeAlias alias="DispalyPageInfoVO"			type="com.display.backoffice.sym.monter.models.DispalyPageInfoVO" />
+		<typeAlias alias="DispalyPageInfo"			type="com.display.backoffice.sym.monter.models.DispalyPageInfo" />
+		
+		<typeAlias alias="AuthorInfo"			type="com.display.backoffice.sym.rnt.models.AuthorInfo" />
+		
 		
 		
 		<!--  전문 관련 models 
