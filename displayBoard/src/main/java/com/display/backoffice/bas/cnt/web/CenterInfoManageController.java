@@ -90,7 +90,6 @@ public class CenterInfoManageController {
 			
 			if (!jwtVerification.isVerification(request)) {
         		ResultVO resultVO = new ResultVO();
-        		log.info("9999999999999999999999999999999999======================================================");
     			return jwtVerification.handleAuthError(resultVO); // 토큰 확
     			
         	}else {
@@ -100,8 +99,6 @@ public class CenterInfoManageController {
         		searchMap.put("roleId", userInfo[2]);
         		searchMap.put("partId", userInfo[3]);
         	}
-			
-			log.info("787877777777777====="+searchMap);
 			
 			int pageUnit = searchMap.get(Globals.PAGE_UNIT) == null ?   pageUnitSetting : Integer.valueOf((String) searchMap.get(Globals.PAGE_UNIT));
     		int pageSize = searchMap.get(Globals.PAGE_SIZE) == null ?   pageSizeSetting : Integer.valueOf((String) searchMap.get(Globals.PAGE_SIZE));  
@@ -206,9 +203,9 @@ public class CenterInfoManageController {
 	@ApiOperation(value="지점 삭제", notes = "성공시 지점 정보를 삭제 합니다.")
 	@ApiImplicitParam(name = "centerId", value = "지점 코드")
 	@DeleteMapping(value="{centerId}.do")
-	public ModelAndView deleteCenterInfo(@PathVariable String centerId, 
-										HttpServletRequest request, 
-										BindingResult bindingResult) throws Exception {
+	public ModelAndView deleteCenterInfo(@PathVariable String centerId,
+										HttpServletRequest request
+										) throws Exception {
 		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 
 		try {
