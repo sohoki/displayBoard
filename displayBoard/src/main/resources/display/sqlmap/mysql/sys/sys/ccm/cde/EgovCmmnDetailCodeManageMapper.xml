@@ -11,7 +11,8 @@
 				date_format(A.LAST_UPDT_PNTTM, '%Y-%m-%d %p %h:%i') AS LAST_UPDT_PNTTM, A.LAST_UPDUSR_ID
 			FROM COMTCCMMNDETAILCODE A
 			     INNER JOIN COMTCCMMNCODE B ON A.CODE_ID = B.CODE_ID				     
-			WHERE B.CODE_ID = #{codeId}	AND B.SYSTEM_CODE = #{systemCode}		
+			WHERE B.CODE_ID = #{codeId}	
+<!-- 			AND B.SYSTEM_CODE = #{systemCode}		 -->
 		) R
 		WHERE 1=1
 		ORDER BY REPLACE(CODE, CONCAT(CODE_ID, '_'), '') ASC
