@@ -8,8 +8,8 @@ spring:
       prod:
         - prod
         - common
-      local:
-        - local
+      server:
+        - server
         - common
 
 
@@ -114,7 +114,7 @@ Globals:
   DbType : mysql
   mysql:
     DriverClassName : net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-    Url : jdbc:log4jdbc:mysql://192.168.22.179:20001/DB_DISPLAYINFO?useSSL=false&characterEncoding=utf8&allowPublicKeyRetrieval=true&serverTimezone=UTC&allowMultiQueries=true
+    Url : jdbc:log4jdbc:mysql://192.168.22.175:20001/DB_DISPLAYINFO?useSSL=false&characterEncoding=utf8&allowPublicKeyRetrieval=true&serverTimezone=UTC&allowMultiQueries=true
     UserName : root
     Password : Qwer1234!@#$
   fileUpload:
@@ -129,13 +129,13 @@ Globals:
     url : http://localhost:8080
 
 spring.redis :
-     host: 192.168.22.179
+     host: 192.168.22.175
      port: 30004
      password : Rowa230927!@  
 
     
 spring.rabbitmq:
-    host: 192.168.22.179
+    host: 192.168.22.175
     port: 30003
     username: admin
     password: Rowa230927!@
@@ -146,7 +146,7 @@ spring.rabbitmq:
 spring:
   config:
     activate:
-      on-profile: local
+      on-profile: server
 
 Globals:
   OsType : WINDOWS
@@ -154,7 +154,7 @@ Globals:
   DbType : mysql
   mysql:
     DriverClassName : net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-    Url : jdbc:log4jdbc:mysql://59.14.245.89:20001/DB_DISPLAYINFO?useSSL=false&characterEncoding=utf8&allowPublicKeyRetrieval=true&serverTimezone=UTC&allowMultiQueries=true
+    Url : jdbc:log4jdbc:mysql://192.168.85.43:3306/DB_DISPLAYINFO?useSSL=false&characterEncoding=utf8&allowPublicKeyRetrieval=true&serverTimezone=UTC&allowMultiQueries=true
     UserName : root
     Password : Qwer1234!@#$
   fileUpload:
@@ -169,13 +169,13 @@ Globals:
     url : http://localhost:8080
 
 spring.redis :
-     host: 59.14.245.89
+     host: 192.168.90.58
      port: 30004
      password : Rowa230927!@  
 
     
 spring.rabbitmq:
-    host: 59.14.245.89
+    host: 192.168.90.58
     port: 30003
     username: admin
     password: Rowa230927!@

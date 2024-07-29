@@ -124,8 +124,7 @@ public class XmlInfoManageController {
 	@ApiOperation(value="전문  상세 조회", notes = "성공시 전문 정보를 상세 조회 합니다.")
 	@GetMapping(value="{xmlSeq}.do")
 	public ModelAndView selectViewXml(@PathVariable String xmlSeq
-									, HttpServletRequest request
-									, BindingResult bindingResult) throws Exception {
+									, HttpServletRequest request) throws Exception {
 		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
 		
 		try{
@@ -149,7 +148,7 @@ public class XmlInfoManageController {
 	
 	@ApiOperation(value="전문 업데이트", notes = "성공시 전문 정보를 업데이트 합니다.")
 	@PostMapping(value="xmlUpdate.do")
-	public ModelAndView updateXml(@RequestBody  XmlInfoVO vo
+	public ModelAndView updateXml(XmlInfoVO vo
 								, HttpServletRequest request
 								, BindingResult bindingResult)throws Exception{
 		
