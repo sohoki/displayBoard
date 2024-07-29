@@ -13,6 +13,8 @@ import egovframework.com.cmm.service.Globals;
 import egovframework.com.cmm.service.ResultVO;
 import egovframework.com.jwt.config.JwtVerification;
 import egovframework.let.utl.fcc.service.EgovDateUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.egovframe.rte.fdl.idgnr.EgovIdGnrService;
 import org.egovframe.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import com.display.backoffice.sts.cnt.web.FileUpladController;
 
+@Api(tags = {"메시지관리 API"})
 @Slf4j
 @RestController
 @RequestMapping("/api/backoffice/contentManage/schedule")
@@ -64,7 +67,7 @@ public class SchduleInfoManageController {
 	
 
 	
-	
+	@ApiOperation(value="메시지관리 조회", notes = "성공시 메시지 현황을 조회 합니다.")
 	@PostMapping(value="schInfoList.do")
 	public ModelAndView  selectSchInfoManageListByPagination( @RequestBody SchduleInfoVO searchVO
 															, HttpServletRequest request) throws Exception {
