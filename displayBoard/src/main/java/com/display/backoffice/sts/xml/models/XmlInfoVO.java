@@ -34,11 +34,18 @@ public class XmlInfoVO extends XmlInfo implements Serializable {
     private int totalRecordCount = 0;
     
     private String sendGubunTxt = "";
+    private String workGubunTxt = "";
     
     
     
         
     
+	public String getWorkGubunTxt() {
+		return workGubunTxt;
+	}
+	public void setWorkGubunTxt(String workGubunTxt) {
+		this.workGubunTxt = workGubunTxt;
+	}
 	public String getSendGubunTxt() {
 		return sendGubunTxt;
 	}
@@ -120,7 +127,7 @@ public class XmlInfoVO extends XmlInfo implements Serializable {
 				+ firstIndex + ", lastIndex=" + lastIndex
 				+ ", recordCountPerPage=" + recordCountPerPage
 				+ ", seachWorkGubun=" + seachWorkGubun + ", totalRecordCount="
-				+ totalRecordCount + ", sendGubunTxt=" + sendGubunTxt
+				+ totalRecordCount + ", sendGubunTxt=" + sendGubunTxt + ", workGubunTxt=" + workGubunTxt
 				+ ", getSendGubun()=" + getSendGubun() + ", getUserId()="
 				+ getUserId() + ", getXmlSeq()=" + getXmlSeq()
 				+ ", getWorkGubun()=" + getWorkGubun()

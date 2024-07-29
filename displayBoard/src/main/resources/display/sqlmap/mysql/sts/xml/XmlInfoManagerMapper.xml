@@ -8,13 +8,20 @@
 		    SELECT
 					     a.XML_SEQ as "xmlSeq", 
 			             a.WORK_GUBUN  as "workGubun",
+			             a.SEND_GUBUN  as "sendGubun",
+			             b.CODE_NM as "workGubunTxT",
 			             a.XML_PROCESS_NAME  as "xmlProcessName",
-			             a.PROCESS_REMARK as "processRemark",			             
+			             a.PROCESS_REMARK as "processRemark",		
+			             a.ETC2 as "etc2",
 			             a.XML_INPUTPARAM  as "xmlInputParam",
 			             a.XML_OTPUTPARAM  as "xmlOutputParam",	
+			             a.XML_INPUTPARAMSAMPLE as "xmlInputParamSample",
+			             a.XML_EXPLAIN as "xmlExplain",
+			             a.RESULT_CODE_EXAMPLE as "resultCodeExample",
+			             a.ETC1 as "etc1",
 			             a.TEST_OK  as "testOk",	
 			             b.CODE_NM as "codeNm"		            
-		    FROM    TB_SENDMESSAGETYPR a, LETTCCMMNDETAILCODE b
+		    FROM    TB_SENDMESSAGETYPR a, COMTCCMMNDETAILCODE b
 		    WHERE a.WORK_GUBUN =  b.CODE		        
 		        <if test="searchKeyword != ''">
 						<choose>
@@ -36,13 +43,13 @@
      </select>
   
     <select id="selectXmlrInfoManageDetail"  resultType="XmlInfoVO">
-           SELECT  a.XML_SEQ as xmlSeq , a.WORK_GUBUN as workGubun, a.XML_PROCESS_NAME as xmlProcessName, a.PROCESS_REMARK as processRemark, 
+           SELECT  a.XML_SEQ as xmlSeq , a.WORK_GUBUN as workGubun, a.SEND_GUBUN as sendGubun, a.XML_PROCESS_NAME as xmlProcessName, a.PROCESS_REMARK as processRemark, 
                         a.XML_INPUTPARAM as xmlInputParam, a.XML_OTPUTPARAM as xmlOutputParam, 
                         a.RESULT_CODE_EXAMPLE as resultCodeExample, a.ETC1 as etc1, a.ETC2 as etc2, a.ETC3 as etc3,
 						a.TEST_OK as testOk, a.XML_INPUTPARAMSAMPLE as xmlInputParamSample, a.XML_EXPLAIN as xmlExplain,
 						b.CODE_NM as codeNm,
                         fn_DetailCodeNm(a.SEND_GUBUN)                  sendGubunTxt
-		    FROM TB_SENDMESSAGETYPR a, LETTCCMMNDETAILCODE b
+		    FROM TB_SENDMESSAGETYPR a, COMTCCMMNDETAILCODE b
 		    WHERE a.WORK_GUBUN = b.CODE and a.XML_SEQ = #{xmlSeq}		  
     </select>
     <select id="selectDIDProcessNm" resultType="java.lang.String">
@@ -69,7 +76,7 @@
     </select>
     <select id="selectXmlInfoManageListTotCnt_S"  resultType="java.lang.Integer">        
        SELECT IFNULL(COUNT(*),0) 
-       FROM    TB_SENDMESSAGETYPR a, LETTCCMMNDETAILCODE b
+       FROM    TB_SENDMESSAGETYPR a, COMTCCMMNDETAILCODE b
 	   WHERE a.WORK_GUBUN =  b.CODE       
               <if test="searchKeyword != ''">
 						<choose>
@@ -109,10 +116,11 @@
 		                                RESULT_CODE_EXAMPLE = #{resultCodeExample} ,
 		                                ETC1 = #{etc1,jdbcType=VARCHAR} ,
 		                                ETC2 = #{etc2,jdbcType=VARCHAR} ,
-		                                ETC3 = #{etc3,jdbcType=VARCHAR} ,
+<!-- 		                                ETC3 = #{etc3,jdbcType=VARCHAR} , -->
 		                                TEST_OK = #{testOk,jdbcType=VARCHAR} ,
 		                                XML_INPUTPARAMSAMPLE = #{xmlInputParamSample} ,
-		                                XML_EXPLAIN = #{xmlExplain,jdbcType=VARCHAR}                      
+		                                XML_EXPLAIN = #{xmlExplain,jdbcType=VARCHAR} ,
+		                                RESULT_CODE_EXAMPLE = #{resultCodeExample,jdbcType=VARCHAR}                  
       WHERE XML_SEQ = #{xmlSeq}           
      </update>
      <delete id="deleteXmlInfoManage">

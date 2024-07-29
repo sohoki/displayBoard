@@ -163,7 +163,7 @@ public class XmlInfoManageController {
 	    	}
 		    
 		    int ret = xmlInfoManageService.updateXmlInfoManage(vo);
-		    String meesage = (ret >0) ? vo.getMode().equals("Ins") ? "sucess.common.insert" : "sucess.common.update"
+		    String meesage = (ret >0) ? vo.getMode().equals("Ins") ? "success.common.insert" : "success.common.update"
 		    							: "fail.request.msg";
 		    String Status =  (ret >0) ?  Globals.STATUS_SUCCESS : Globals.STATUS_FAIL;
 		   

@@ -239,7 +239,7 @@ public class PartInfoManageController {
 			System.out.println("partUpdate " + ret);
 			
 			status = ret >0 ? Globals.STATUS_SUCCESS : Globals.STATUS_FAIL;
-			meesage = partInfo.getMode().equals("Ins") ? "sucess.common.insert" : "sucess.common.update";
+			meesage = partInfo.getMode().equals("Ins") ? "success.common.insert" : "success.common.update";
 			
 			
 			model.addObject(Globals.STATUS, status);
