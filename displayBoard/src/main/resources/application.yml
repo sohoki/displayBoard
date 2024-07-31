@@ -35,7 +35,7 @@ server.linkage:
       
 rabbitmq:
   queue:
-    name: display.queue
+    name: ipcc.queue
   exchange:
     name: display.direct.exchange
   routing:

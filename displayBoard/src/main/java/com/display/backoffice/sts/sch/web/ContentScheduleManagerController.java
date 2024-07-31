@@ -6,7 +6,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -155,6 +157,7 @@ public class ContentScheduleManagerController {
 		}
 	    return model;
 	}
+	/*
 	@PostMapping(value="conSchInfoView.do")
 	public ModelAndView selectConSchInfoView(@RequestBody ContentScheduleInfo vo
 			                                 , HttpServletRequest request) throws Exception{
@@ -168,6 +171,32 @@ public class ContentScheduleManagerController {
         	}
 			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 			model.addObject("conSchInfo", contSchedule.selectConetntSchduleInfoManageView(vo.getConschCode()));
+		}catch(NullPointerException e){
+			log.debug("selectConSchInfoView error:" + e.toString());
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.msg"));		
+		}catch(Exception e){
+			log.debug("selectConSchInfoView error:" + e.toString());
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.common.msg"));		
+		}
+		return model;
+	}
+	*/
+	
+	@GetMapping(value="{conschCode}.do")
+	public ModelAndView selectConSchInfoView(@PathVariable String conschCode
+			                                 , HttpServletRequest request) throws Exception{
+		
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW);
+		
+		try{
+			if (!jwtVerification.isVerification(request)) {
+        		ResultVO resultVO = new ResultVO();
+    			return jwtVerification.handleAuthError(resultVO); // 토큰 확
+        	}
+			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+			model.addObject("conSchInfo", contSchedule.selectConetntSchduleInfoManageView(conschCode));
 		}catch(NullPointerException e){
 			log.debug("selectConSchInfoView error:" + e.toString());
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);

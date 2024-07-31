@@ -23,6 +23,7 @@ public class ContentScheduleInfo implements Serializable {
     private String conschUseyn  = "";
     private int conschAgentcnt = 0;
     private String partId = "";
+    private String parentPartId = "";
     private String adminLevel = "";
     
 	
@@ -38,6 +39,12 @@ public class ContentScheduleInfo implements Serializable {
 	private String mode;
     
     
+	public String getParentPartId() {
+		return parentPartId;
+	}
+	public void setParentPartId(String parentPartId) {
+		this.parentPartId = parentPartId;
+	}
 	public String getAdminLevel() {
 		return adminLevel;
 	}
