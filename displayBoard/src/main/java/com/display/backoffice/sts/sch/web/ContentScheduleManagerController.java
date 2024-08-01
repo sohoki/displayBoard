@@ -423,6 +423,7 @@ public class ContentScheduleManagerController {
         		vo.setUserId(userInfo[0]);
         		
         	}
+    		log.info("vo.getConschCode"+vo.getConschCode());
 			AdminLoginVO user = (AdminLoginVO) request.getSession().getAttribute("AdminLoginVO");	
 			
 			String meesage = vo.getMode().equals("Ins") ? "sucess.common.insert" : "sucess.common.update";

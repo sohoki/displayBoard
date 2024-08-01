@@ -530,11 +530,11 @@ public class DisplayPageInfoManageController {
 		return model;
 	}
 	@RequestMapping(value="displayCombo/{agentContentgubun}.do")
-	public ModelAndView selectDisplayCombo ( HttpServletRequest request
-		                            		, BindingResult bindingResult ) throws Exception{	
+	public ModelAndView selectDisplayCombo (@PathVariable String agentContentgubun,
+											HttpServletRequest request) throws Exception{	
 		ModelAndView model = new 	ModelAndView(Globals.JSON_VIEW);
 		
-		String agentContentgubun = request.getParameter("agentContentgubun") != null ? request.getParameter("agentContentgubun") : "";
+		agentContentgubun = request.getParameter("agentContentgubun") != null ? request.getParameter("agentContentgubun") : "";
 		DispalyPageInfoVO searchVO = new DispalyPageInfoVO();
 		
 		try{

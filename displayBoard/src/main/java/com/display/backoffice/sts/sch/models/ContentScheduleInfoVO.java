@@ -179,6 +179,7 @@ public class ContentScheduleInfoVO extends ContentScheduleInfo implements Serial
 				+ getDisplayPagecnt() + ", getDisplayTotaltime()="
 				+ getDisplayTotaltime() + ", getAgentCnt()=" + getAgentCnt()
 				+ ", getReportTitle()=" + getReportTitle()
+				+ ", getConschUseyn()=" + getConschUseyn()
 				+ ", getTotalRecordCount()=" + getTotalRecordCount()
 				+ ", getConschUnisinkgubunTxt()=" + getConschUnisinkgubunTxt()
 				+ ", getPartNm()=" + getPartNm() + ", getDisplayTitle()="
