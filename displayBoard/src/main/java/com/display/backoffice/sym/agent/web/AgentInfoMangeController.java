@@ -48,6 +48,7 @@ import egovframework.com.cmm.service.Globals;
 import egovframework.com.cmm.service.ResultVO;
 import egovframework.com.jwt.config.JwtVerification;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 import org.egovframe.rte.fdl.cmmn.trace.LeaveaTrace;
@@ -497,7 +498,7 @@ public class AgentInfoMangeController {
 			vo.setUserId(jwtVerification.getTokenUserName(request));
 			
 			int ret  = 0;
-			meesage = vo.getMode().equals("Ins") ? "sucess.common.insert" : "sucess.common.update";
+			meesage = vo.getMode().equals("Ins") ? "sucess.common.insert" : "success.common.update";
 			ret = agentService.updateAgentPageInfoManage(vo);
 		
 			if (ret >0){

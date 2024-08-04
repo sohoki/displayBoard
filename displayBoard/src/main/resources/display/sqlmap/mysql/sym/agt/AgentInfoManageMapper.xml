@@ -5,7 +5,7 @@
     <select id="selectAgentPageInfoManageListByPagination" resultType="AgentInfoVO">     	      
 		 	SELECT SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT,
 		 	       TB.* FROM (
-						    SELECT a.AGENT_CODE, a.AGENT_NM, a.AGENT_REMARK, a.AGENT_IP, a.AGENT_MAC,
+						    SELECT a.AGENT_CODE, a.AGENT_NM, a.AGENT_REMARK, a.AGENT_IP, a.AGENT_MAC, a.PART_ID, a.CENTER_ID,
                                    a.AGENT_USEYN,
                                    CASE a.AGENT_CONTENTGUBUN WHEN 'AGENT_CONTENT_1'  THEN
                                         a.DISPLAY_SEQ 

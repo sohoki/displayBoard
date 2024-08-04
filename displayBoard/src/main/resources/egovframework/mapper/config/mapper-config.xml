@@ -57,6 +57,9 @@
 		<typeAlias alias="XmlInfoVO"			type="com.display.backoffice.sts.xml.models.XmlInfoVO" />
 		<typeAlias alias="XmlInfo"			type="com.display.backoffice.sts.xml.models.XmlInfo" />
 		
+		<typeAlias alias="DetailPageInfoVO"			type="com.display.backoffice.sym.monter.models.DetailPageInfoVO" />
+		<typeAlias alias="DetailPageInfo"			type="com.display.backoffice.sym.monter.models.DetailPageInfo" />
+		
 		
 		
 		<!--  전문 관련 models 
