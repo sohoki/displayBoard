@@ -35,6 +35,7 @@ public class AgentInfo implements  Serializable {
 	private String agentStarttime = "";
 	private String agentEndtime = "";
 	private String agentGubun = "";
+	private String agentGubunNm = "";
 	private int agentFloor = 0;
 	private String agentContentgubun = "";
 	
@@ -49,6 +50,12 @@ public class AgentInfo implements  Serializable {
 	
 	
 	
+	public String getAgentGubunNm() {
+		return agentGubunNm;
+	}
+	public void setAgentGubunNm(String agentGubunNm) {
+		this.agentGubunNm = agentGubunNm;
+	}
 	public String getConnDate() {
 		return connDate;
 	}

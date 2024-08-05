@@ -7,7 +7,7 @@
 		 	       TB.* FROM (
 						    SELECT a.AGENT_CODE, a.AGENT_NM, a.AGENT_REMARK, a.AGENT_IP, a.AGENT_MAC, a.PART_ID, a.CENTER_ID,
                                    a.AGENT_USEYN,
-                                   CASE a.AGENT_CONTENTGUBUN WHEN 'AGENT_CONTENT_1'  THEN
+                                   CASE a.AGENT_CONTENTGUBUN WHEN 'DISP_AGENT_CONTENT_1'  THEN
                                         a.DISPLAY_SEQ 
                                    ELSE
                                          (SELECT d.DISPLAY_SEQ 
@@ -17,7 +17,7 @@
 											    AND DATE_FORMAT(NOW(), '%Y%m%d') BETWEEN b.CONSCH_STARTDAY AND b.CONSCH_ENDDAY
 										  )
                                    END AS displaySeq, 
-                                   CASE a.AGENT_CONTENTGUBUN WHEN 'AGENT_CONTENT_1'  THEN
+                                   CASE a.AGENT_CONTENTGUBUN WHEN 'DISP_AGENT_CONTENT_1'  THEN
                                          (select DISPLAY_TITLE from TB_DISPLAYPAGEINFO b WHERE a.DISPLAY_SEQ = b.DISPLAY_SEQ ) 
                                    ELSE
                                          (SELECT d.DISPLAY_TITLE 
@@ -27,7 +27,7 @@
 											    AND DATE_FORMAT(NOW(), '%Y%m%d') BETWEEN b.CONSCH_STARTDAY AND b.CONSCH_ENDDAY
 										  )
                                    END AS displayTitle,
-                                   CASE a.AGENT_CONTENTGUBUN WHEN 'AGENT_CONTENT_1'  THEN 
+                                   CASE a.AGENT_CONTENTGUBUN WHEN 'DISP_AGENT_CONTENT_1'  THEN 
                                         (SELECT DISPALY_TOTALTIME FROM TB_DISPLAYPAGEINFO b WHERE a.DISPLAY_SEQ = b.DISPLAY_SEQ ) 
                                    ELSE
                                                (SELECT d.DISPALY_TOTALTIME 
@@ -38,9 +38,9 @@
 												)
                                    END AS displayTotalTime,
 <!-- 						           FN_AgentState_nowState(a.AGENT_CODE) agentStateInfo, -->
-						           a.AGENT_FLOOR, fn_DetailCodeNm(a.AGENT_GUBUN) as agentGubun,
+						           a.AGENT_FLOOR, fn_DetailCodeNm2(a.AGENT_GUBUN) as agentGubunNm, a.AGENT_GUBUN as agentGubun,
 						           CONCAT(a.agent_starttime,'~',agent_endtime) as agentStarttime,
-						           fn_DetailCodeNm(a.AGENT_CONTENTGUBUN) as contentGubun,
+						           fn_DetailCodeNm2(a.AGENT_CONTENTGUBUN) as contentGubun, a.AGENT_CONTENTGUBUN as agentContentgubun,
 						           a.AGENT_STATE, a.CONN_DATE, c.CENTER_NM
 							FROM TB_AGENTINFO a, TB_CENTERINFO c
 							WHERE a.CENTER_ID = c.CENTER_ID

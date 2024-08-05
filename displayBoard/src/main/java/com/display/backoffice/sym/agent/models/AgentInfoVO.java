@@ -284,8 +284,8 @@ public class AgentInfoVO extends AgentInfo implements Serializable {
 				+ ", getAgentContentgubun()=" + getAgentContentgubun()
 				+ ", getAgentFloor()=" + getAgentFloor() + ", getAgentGubun()="
 				+ getAgentGubun() + ", getAgentStarttime()="
-				+ getAgentStarttime() + ", getAgentEndtime()="
-				+ getAgentEndtime() + ", getCenterId()=" + getCenterId()
+				+ getAgentStarttime() + ", getAgentEndtime()=" + getAgentEndtime() 
+				+ ", getAgentGubunNm()=" + getAgentGubunNm() + ", getCenterId()=" + getCenterId()
 				+ ", getPartId()=" + getPartId() + ", getUpdateChange()="
 				+ getUpdateChange() + ", getUpdateDate()=" + getUpdateDate()
 				+ ", getUserId()=" + getUserId() + ", getAgentCode()="

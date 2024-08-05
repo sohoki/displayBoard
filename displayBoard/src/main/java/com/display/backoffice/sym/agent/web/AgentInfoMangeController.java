@@ -407,6 +407,31 @@ public class AgentInfoMangeController {
 				
 		return model;
 	}
+	@ApiOperation(value="Display combobox 정보 조회", notes = "성공시 지점 Display 정보 조회 합니다.")
+	@GetMapping("selectCodeDM.do")
+	public ModelAndView CenterComboInfo (HttpServletRequest request) throws Exception {  
+		
+		ModelAndView model = new ModelAndView(Globals.JSON_VIEW); 
+		DispalyPageInfoVO searchVO = new DispalyPageInfoVO(); 
+		/*
+		if (!jwtVerification.isVerificationAdmin(request)) {
+    		ResultVO resultVO = new ResultVO();
+			return jwtVerification.handleAuthError(resultVO); // 토큰 확인
+        }
+		*/
+
+		try{ 
+			model.addObject(Globals.JSON_RETURN_RESULT_LIST, disService.selectDisplayPageInfoCombo(searchVO));
+			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
+		}catch(Exception e){
+				//result = "F";
+			log.error("CenterComboInfo : error" + e.toString());
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("fail.request.msg"));	
+			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);
+		 }
+		 return model;
+	}
+	
 	/*
 	@PostMapping (value="agentInfoView.do")
 	public ModelAndView selecEqupInfoManageView(@RequestBody AgentInfoVO vo
@@ -481,7 +506,7 @@ public class AgentInfoMangeController {
 	
 	
 	@PostMapping (value="agentInfoUpdate.do")
-	public ModelAndView updateequpInfoManage(@RequestBody AgentInfoVO vo
+	public ModelAndView updateequpInfoManage(AgentInfoVO vo
 											 , HttpServletRequest request                         				 
 											 , BindingResult result) throws Exception{
 		ModelAndView  model = new ModelAndView(Globals.JSON_VIEW);
