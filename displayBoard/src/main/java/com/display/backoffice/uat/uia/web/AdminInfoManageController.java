@@ -3,6 +3,7 @@ package com.display.backoffice.uat.uia.web;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import com.display.backoffice.uat.uia.models.AdminInfo;
 import com.display.backoffice.uat.uia.service.AdminInfoManageService;
 import com.display.backoffice.uat.uia.models.AdminInfoVO;
@@ -73,6 +74,7 @@ public class AdminInfoManageController {
 	/** JwtVerification */
 	@Autowired
 	private JwtVerification jwtVerification;
+	
 	
 	
 	
@@ -282,7 +284,7 @@ public class AdminInfoManageController {
 	//추후 .do 파일 확인 하기 
 	@ApiOperation(value="사용자 업데이트", notes="관리자 업데이트")
 	@PostMapping("managerUpdate.do")
-	public ModelAndView updatemanger (@RequestBody  AdminInfoVO vo,
+	public ModelAndView updatemanger (AdminInfoVO vo,
 									  HttpServletRequest request, 
 									  BindingResult bindingResult) throws Exception{
 		

@@ -163,7 +163,7 @@ public class SchduleInfoManageController {
 	
 	//파일 업로드 관련 내용 정리 하기
 	@PostMapping (value="schInfoUpdate.do")
-	public ModelAndView updateequpInfoManage(@RequestBody SchduleInfoVO vo
+	public ModelAndView updateequpInfoManage(SchduleInfoVO vo
 											 , HttpServletRequest request) throws Exception{
 		
 		
@@ -188,7 +188,7 @@ public class SchduleInfoManageController {
 			vo.setUserId(jwtVerification.getTokenUserName(request));
 			
 			
-			String meesage = vo.getMode().equals("Ins") ? "sucess.common.insert" : "sucess.common.update";
+			String meesage = vo.getMode().equals("Ins") ? "success.common.insert" : "success.common.update";
 			SchduleInfo info = schService.updateSchduleInfoManage(vo);
 			
 			

@@ -8,6 +8,7 @@
 			   SELECT
 					a.ADMIN_ID ,
 					a.ADMIN_NAME ,
+					a.EMP_NO,
 					a.ADMIN_TEL ,
 					a.ADMIN_EMAIL ,
 					a.PART_ID  as "partId",
@@ -161,15 +162,14 @@
 									</if>
 									, LAST_UPDUSR_ID = #{userId}
 									, ROLE_ID = #{roleId ,jdbcType=VARCHAR}
-									, PBX_EXTENSION = #{pbxExtension ,jdbcType=VARCHAR}
-									, CONSULTANT_USEYN = #{consultantUseyn ,jdbcType=VARCHAR}
-									, SYSTEMCODE_USECODE = #{systemcodeUsecode, jdbcType=VARCHAR}
+<!-- 									, PBX_EXTENSION = #{pbxExtension ,jdbcType=VARCHAR} -->
+<!-- 									, CONSULTANT_USEYN = #{consultantUseyn ,jdbcType=VARCHAR} -->
 									, LAST_UPDT_PNTTM = NOW()
 		WHERE ADMIN_ID = #{adminId};
 		
 		INSERT INTO TB_MANAGERINFO_STATE_CHANAGEINFO(USER_ID, INSTT_CODE, PART_ID, ADMIN_STATUS, ADMIN_POSITION, 
 													LAST_UPDUSR_ID, STATE_REGDATE, CHANGE_DC)
-		SELECT ADMIN_ID, INSTT_CODE, PART_ID, ADMIN_STATUS, ADMIN_POSITION, #{userId},  '관리자 수정'
+		SELECT ADMIN_ID, INSTT_CODE, PART_ID, ADMIN_STATUS, ADMIN_POSITION, #{userId}, NOW() ,'관리자 수정'
 		FROM TB_MANAGERINFO
 		WHERE ADMIN_ID = #{userId}
 	</update>

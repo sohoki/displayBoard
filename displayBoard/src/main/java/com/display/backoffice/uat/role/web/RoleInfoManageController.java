@@ -29,8 +29,9 @@ import egovframework.com.cmm.EgovMessageSource;
 import egovframework.com.cmm.service.Globals;
 import egovframework.com.cmm.service.ResultVO;
 import egovframework.com.jwt.config.JwtVerification;
+import io.swagger.annotations.Api;
 
-
+@Api(tags = {"role 관련 연동 API"})
 @RestController
 @RequestMapping("/api/backoffice/uat/role/")
 public class RoleInfoManageController {
