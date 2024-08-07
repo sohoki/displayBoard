@@ -113,7 +113,7 @@ public class DisplayPageInfoManageController {
     @Value("${page.pageSize}")
     private int pageSizeSetting ;
     
-    @ApiOperation(value="공통 상세 코드 조회", notes = "성공시 공통 상세 코드를 조회 합니다.")
+    @ApiOperation(value="화면관리 리스트 조회", notes = "성공시 화면관리를 조회 합니다.")
 	@PostMapping(value="displayList.do")
 	public ModelAndView  selectDisplayInfoManageListByPagination( @ModelAttribute("searchVO") DispalyPageInfoVO searchVO
 														, HttpServletRequest request
@@ -291,7 +291,7 @@ public class DisplayPageInfoManageController {
 		return jsonTest;
 	}
 	
-    @ApiOperation(value="공통 상세 코드 조회", notes = "성공시 공통 상세 코드를 조회 합니다.")
+    @ApiOperation(value="화면관리 업데이트", notes = "성공시 화면관리를 업데이트 합니다.")
 	@PostMapping(value="disPlayUpdate.do")
 	public ModelAndView displayUpdare(@RequestBody DispalyPageInfo vo,
 									HttpServletRequest request) throws Exception {
@@ -693,9 +693,9 @@ public class DisplayPageInfoManageController {
 		return model;
 	}
 	
-	
+	@ApiOperation(value="기본화면관리 업데이트", notes = "성공시 기본화면관리를 업데이트 합니다.")
 	@PostMapping (value="displayBasicUpdate.do")
-	public ModelAndView updateequpInfoManage(@RequestBody DispalyPageInfoVO vo	
+	public ModelAndView updateequpInfoManage(DispalyPageInfoVO vo	
                                              , HttpServletRequest request                         				 
 										     , BindingResult result) throws Exception{
 		
@@ -713,7 +713,7 @@ public class DisplayPageInfoManageController {
 			int ret  = displayService.updateDisplayPageInfoManage(vo);
 			
 			if (ret >0){
-				String message = vo.getMode().equals("Ins") ? egovMessageSource.getMessage("sucess.common.insert") : egovMessageSource.getMessage("sucess.common.update");
+				String message = vo.getMode().equals("Ins") ? egovMessageSource.getMessage("success.common.insert") : egovMessageSource.getMessage("success.common.update");
 				if (vo.getMode().equals("Ins")){
 					String displaySeq = displayService.selectDisplayMaxSeq();
 					vo.setDisplaySeq(displaySeq);
