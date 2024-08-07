@@ -5,7 +5,7 @@
     <select id="selectDisplayPageInfoManageListByPagination" resultType="DispalyPageInfoVO">     	      
 		 	SELECT SUM(1) OVER(PARTITION BY NULL) AS TOTAL_RECORD_COUNT,
 		 	       TB.* FROM (
-						    SELECT a.DISPLAY_SEQ, a.DISPLAY_TITLE, a.DISPLAY_REMARK, a.DISPLAY_GUBUN, 
+						    SELECT a.DISPLAY_SEQ, a.DISPLAY_TITLE, a.DISPLAY_REMARK, a.DISPLAY_GUBUN, a.PART_ID,
 						            CASE WHEN ((fn_agentCnt(a.DISPLAY_SEQ)) > 1) THEN 
                                       CONCAT((SELECT b.AGENT_NM 
                                               FROM TB_AGENTINFO b 
