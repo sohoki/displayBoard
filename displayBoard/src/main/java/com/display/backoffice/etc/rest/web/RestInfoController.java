@@ -185,7 +185,7 @@ public class RestInfoController {
         	}
    			
    			int ret  = 0;
-   			meesage = vo.getMode().equals("Ins") ? "sucess.common.insert": "sucess.common.update";
+   			meesage = vo.getMode().equals("Ins") ? "success.common.insert": "success.common.update";
    			
    			ret = restNoticeService.updateRestNoticeInfo(vo);
    			if (ret >0){

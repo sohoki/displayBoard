@@ -523,7 +523,7 @@ public class AgentInfoMangeController {
 			vo.setUserId(jwtVerification.getTokenUserName(request));
 			
 			int ret  = 0;
-			meesage = vo.getMode().equals("Ins") ? "sucess.common.insert" : "success.common.update";
+			meesage = vo.getMode().equals("Ins") ? "success.common.insert" : "success.common.update";
 			ret = agentService.updateAgentPageInfoManage(vo);
 		
 			if (ret >0){

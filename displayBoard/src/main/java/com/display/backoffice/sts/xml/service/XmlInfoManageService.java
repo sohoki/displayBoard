@@ -128,7 +128,7 @@ public class XmlInfoManageService {
 		try{
 
 			int ret = 0;
-			message = vo.getMode().equals("Ins") ? "sucess.common.insert": "sucess.common.update";
+			message = vo.getMode().equals("Ins") ? "success.common.insert": "success.common.update";
 			
 			if (vo.getMode().equals("Ins")){
 				ret = xmlInfoManagerMapper.insertXmlInfoManage(vo);

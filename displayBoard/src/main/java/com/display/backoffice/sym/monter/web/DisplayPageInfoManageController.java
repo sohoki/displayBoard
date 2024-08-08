@@ -250,12 +250,12 @@ public class DisplayPageInfoManageController {
 			
 			int ret = detailService.insertDetailPageInfoManage(vo);
 			if (ret > 0){
-				model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("sucess.common.insert"));
+				model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.common.insert"));
 				model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 			}else {
 				throw new Exception(); 
 			}
-			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("sucess.common.insert"));
+			model.addObject(Globals.STATUS_MESSAGE, egovMessageSource.getMessage("success.common.insert"));
 			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 		
 		}catch(NullPointerException e){

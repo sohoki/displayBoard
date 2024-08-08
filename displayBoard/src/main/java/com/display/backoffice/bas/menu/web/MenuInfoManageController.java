@@ -210,7 +210,7 @@ public class MenuInfoManageController {
 		if (ret > 0) {
 			model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
 			messageKey = StringUtils.equals(info.getMode(), Globals.SAVE_MODE_INSERT) 
-					? "sucess.common.insert" : "sucess.common.update";
+					? "success.common.insert" : "success.common.update";
 		}
 		else {
 			model.addObject(Globals.STATUS, Globals.STATUS_FAIL);

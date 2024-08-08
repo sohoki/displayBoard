@@ -324,8 +324,8 @@ public class CenterInfoManageController {
 			
 			log.debug("menuInfo:" + vo.getMenuImg());
 
-			String meesage = vo.getMode().equals("Ins") ? "sucess.common.insert"
-														: "sucess.common.update";
+			String meesage = vo.getMode().equals("Ins") ? "success.common.insert"
+														: "success.common.update";
 			int ret = this.restService.updateRestInfo(vo);
 			if (ret > 0) {
 				model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);

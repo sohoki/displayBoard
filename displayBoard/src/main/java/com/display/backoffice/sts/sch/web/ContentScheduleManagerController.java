@@ -426,7 +426,7 @@ public class ContentScheduleManagerController {
     		log.info("vo.getConschCode"+vo.getConschCode());
 			AdminLoginVO user = (AdminLoginVO) request.getSession().getAttribute("AdminLoginVO");	
 			
-			String meesage = vo.getMode().equals("Ins") ? "sucess.common.insert" : "sucess.common.update";
+			String meesage = vo.getMode().equals("Ins") ? "success.common.insert" : "success.common.update";
 			int ret = contSchedule.updateContentSchduleInfoManage(vo);
 			if (ret > 0){
 				model.addObject(Globals.STATUS, Globals.STATUS_SUCCESS);
