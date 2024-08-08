@@ -60,7 +60,7 @@
 		<typeAlias alias="DetailPageInfoVO"			type="com.display.backoffice.sym.monter.models.DetailPageInfoVO" />
 		<typeAlias alias="DetailPageInfo"			type="com.display.backoffice.sym.monter.models.DetailPageInfo" />
 		
-		
+		<typeAlias alias="UserRoleInfo"			type="com.display.backoffice.uat.uia.models.UserRoleInfo" />
 		
 		<!--  전문 관련 models 
 		<typeAlias alias="SendMsgInfoVO"		type="com.display.backoffice.sts.xml.models.SendMsgInfoVO" />
